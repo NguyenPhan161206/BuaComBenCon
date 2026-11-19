@@ -1,0 +1,2 @@
+PASS Independent OpenCV QR decoder: BC0013
+PASS Independent OpenCV decoder on rendered Android QrView: BC0013

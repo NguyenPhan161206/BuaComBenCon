@@ -1,0 +1,10 @@
+{
+  "package": "vn.edu.buacombencon",
+  "apk_sha256": "5ba8b6acd7a15cdc8b0b412948be60b85f33801f214fa6fdd4abe19ea0a740e3",
+  "domain_checks": 18,
+  "native_render_configurations": 19,
+  "native_preview_images": 38,
+  "qr_independent_decode": "BC0013",
+  "device_run_verified": false,
+  "gradle_sync_verified": false
+}

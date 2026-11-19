@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <TextView style="@style/Body" android:text="GỬI MỘT CHÚT ẤM ÁP" android:textSize="10sp" android:letterSpacing="0.16" android:textColor="@color/green"/>
+    <TextView style="@style/Title" android:text="@string/home_title" android:layout_marginTop="10dp" android:textSize="32sp"/>
+    <TextView style="@style/Body" android:text="@string/home_subtitle" android:layout_marginTop="10dp"/>
+    <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="210dp" android:layout_marginTop="24dp" android:background="@drawable/card_green">
+        <vn.edu.buacombencon.MealArtView android:id="@+id/hero_art" android:layout_width="190dp" android:layout_height="190dp" android:layout_gravity="right|center_vertical" android:importantForAccessibility="no"/>
+        <LinearLayout android:layout_width="190dp" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:padding="20dp" android:orientation="vertical" android:gravity="center_vertical">
+            <TextView style="@style/Body" android:text="BỮA ĂN SẺ CHIA" android:textColor="@color/green" android:textSize="10sp" android:letterSpacing="0.1"/>
+            <TextView style="@style/Title" android:text="@string/home_hero" android:textSize="21sp" android:layout_marginTop="8dp"/>
+            <TextView android:id="@+id/find_meal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:gravity="center_vertical" android:text="Tìm suất ăn  →" android:textColor="@color/green" android:textSize="13sp" android:fontFamily="sans-serif-medium" android:background="?android:attr/selectableItemBackground"/>
+        </LinearLayout>
+    </FrameLayout>
+    <LinearLayout android:id="@+id/home_pickup" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="18dp"/>
+    <TextView style="@style/Section" android:text="Đợt hỗ trợ dành cho bạn" android:layout_marginTop="22dp"/>
+    <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:scrollbars="none" android:layout_marginTop="14dp">
+        <LinearLayout android:id="@+id/filter_row" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal"/>
+    </HorizontalScrollView>
+    <LinearLayout android:id="@+id/campaign_list" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="16dp"/>
+</LinearLayout>

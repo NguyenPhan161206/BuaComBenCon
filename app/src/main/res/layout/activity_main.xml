@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/app_root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/background">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:gravity="center_vertical" android:paddingLeft="22dp" android:paddingRight="18dp" android:paddingTop="8dp" android:paddingBottom="8dp">
+        <ImageView android:layout_width="36dp" android:layout_height="36dp" android:src="@drawable/ic_launcher" android:contentDescription="Bữa cơm bên con"/>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginLeft="10dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bữa cơm bên con" android:textSize="17sp" android:textColor="@color/ink" android:fontFamily="sans-serif-medium"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/demo" android:textSize="9sp" android:textColor="@color/muted" android:letterSpacing="0.08"/>
+        </LinearLayout>
+        <TextView android:id="@+id/role_switch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp" android:gravity="center" android:padding="8dp" android:text="Gia đình ⌄" android:textSize="12sp" android:textColor="@color/green" android:background="?android:attr/selectableItemBackground" android:contentDescription="Đổi vai trò trình diễn"/>
+    </LinearLayout>
+    <ScrollView android:id="@+id/scroll" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true" android:clipToPadding="false">
+        <LinearLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingLeft="22dp" android:paddingRight="22dp" android:paddingTop="14dp" android:paddingBottom="28dp"/>
+    </ScrollView>
+    <LinearLayout android:id="@+id/bottom_nav" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:background="@color/white" android:paddingTop="8dp" android:paddingBottom="8dp" android:baselineAligned="false"/>
+</LinearLayout>

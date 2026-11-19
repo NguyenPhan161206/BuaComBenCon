@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Bữa cơm bên con</string>
+    <string name="home_title">Một bữa cơm,\nthêm vững lòng.</string>
+    <string name="home_subtitle">Cùng bạn chăm con, từng bữa ăn ấm áp.</string>
+    <string name="home_hero">Bạn chăm con,\nchúng mình\nlo bữa cơm.</string>
+    <string name="demo">BẢN UI · DỮ LIỆU MẪU</string>
+    <string name="register_note">Gửi đăng ký chưa có nghĩa là được nhận suất. Đơn vị tổ chức sẽ cập nhật kết quả sắp xếp.</string>
+    <string name="privacy">Chỉ cần thông tin người chăm sóc để liên hệ. Không yêu cầu tên, ảnh hoặc bệnh án của trẻ.</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <TextView android:id="@+id/form_title" style="@style/Title" android:text="Đăng ký nhận suất"/>
+    <TextView android:id="@+id/form_context" style="@style/Body" android:layout_marginTop="10dp"/>
+    <TextView style="@style/Body" android:text="Họ tên người chăm sóc *" android:textColor="@color/ink" android:layout_marginTop="24dp" android:labelFor="@id/input_name"/>
+    <EditText android:id="@+id/input_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="54dp" android:layout_marginTop="8dp" android:padding="14dp" android:background="@drawable/card_white" android:hint="Nhập họ và tên" android:inputType="textPersonName|textCapWords" android:textSize="15sp" android:textColor="@color/ink" android:singleLine="true" android:maxLength="80"/>
+    <TextView style="@style/Body" android:text="Số điện thoại liên hệ *" android:textColor="@color/ink" android:layout_marginTop="20dp" android:labelFor="@id/input_phone"/>
+    <EditText android:id="@+id/input_phone" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="54dp" android:layout_marginTop="8dp" android:padding="14dp" android:background="@drawable/card_white" android:hint="Nhập số điện thoại" android:inputType="phone" android:textSize="15sp" android:textColor="@color/ink" android:singleLine="true" android:maxLength="15"/>
+    <TextView style="@style/Body" android:text="Ghi chú cho người tổ chức" android:textColor="@color/ink" android:layout_marginTop="20dp" android:labelFor="@id/input_note"/>
+    <EditText android:id="@+id/input_note" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="90dp" android:layout_marginTop="8dp" android:padding="14dp" android:background="@drawable/card_white" android:hint="Không nhập thông tin bệnh án của trẻ" android:inputType="textMultiLine|textCapSentences" android:gravity="top" android:textSize="14sp" android:maxLength="300"/>
+    <TextView style="@style/Body" android:text="@string/privacy" android:layout_marginTop="18dp" android:textSize="12sp"/>
+    <CheckBox android:id="@+id/consent" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="Tôi đồng ý cung cấp thông tin trên để đơn vị liên hệ và xác nhận đăng ký." android:textSize="13sp" android:textColor="@color/ink" android:layout_marginTop="10dp"/>
+    <TextView style="@style/Body" android:text="@string/register_note" android:textSize="12sp" android:layout_marginTop="12dp"/>
+    <Button android:id="@+id/submit_form" style="@style/PrimaryButton" android:text="Gửi đăng ký" android:layout_marginTop="20dp"/>
+</LinearLayout>

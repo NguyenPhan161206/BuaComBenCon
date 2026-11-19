@@ -1,0 +1,19 @@
+PASS reject registration when campaign is closed
+PASS 30 allocated or received and 5 waiting in seeded campaign
+PASS sample short code maps to the intended registration
+PASS reject code belonging to another campaign
+PASS allocated current-day code accepted
+PASS reject handover beyond actual prepared supply
+PASS reject repeated handover
+PASS reject unknown code
+PASS submission does not grant a meal automatically
+PASS reject a second active self registration for same campaign
+PASS coordinator allocates using confirmed supply
+PASS reject handover before campaign day
+PASS cancelled code cannot be redeemed
+PASS full confirmed supply keeps applicant waiting
+PASS released allocation can be reassigned without exceeding capacity
+PASS local changes survive store recreation
+PASS historical reconciliation keeps unhanded meals visible
+PASS pledged meals remain separate from confirmed supply
+TOTAL 18 checks passed
