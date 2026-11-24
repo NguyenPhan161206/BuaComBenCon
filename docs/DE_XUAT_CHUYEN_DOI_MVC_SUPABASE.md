@@ -93,4 +93,7 @@ Dùng đồng hồ server để kiểm tra các mốc của đợt. Thiết kế
 
 [QA bản Kotlin](QA.md#bản-kotlin-và-xml) · [Tệp xác minh APK](qa/verification.json) · [Kịch bản nghiệm thu MVP](DAC_TA_YEU_CAU_BUA_COM_BEN_CON.md#7-kịch-bản-nghiệm-thu-xuyên-suốt) · [Kotlin tích hợp trong AGP](https://developer.android.com/build/migrate-to-built-in-kotlin) · [Mailpit và Supabase Auth](https://supabase.com/docs/guides/auth/testing-auth-flows)
 
-Tài liệu này ghi lại thiết kế đề xuất. Mốc kiểm thử Android và kết quả tích hợp Supabase sẽ được ghi khi thực hiện từng bước.
+Tài liệu này ghi lại thiết kế đề xuất. Mốc kiểm thử Android và kết quả tích hợp Supabase được ghi nhận theo từng giai đoạn thực thi:
+- **Giai đoạn 1 (Đã hoàn thành):** Tách cấu trúc MVC trên Android với các tầng domain, demo repository, và các UI controller (`CaregiverController`, `CoordinatorController`, `VolunteerController`, `DonorController`, `AccountController`), đảm bảo tương thích 100% với layout XML và công cụ QA layoutlib.
+- **Giai đoạn 2 (Đã hoàn thành):** Dựng hệ thống Supabase local gồm `config.toml`, 3 tệp migration (Schema, RLS Policies, Business RPCs), tệp `seed.sql` với kịch bản 35 hồ sơ cho 30 suất đợt c1, và tệp test `01_business_rules_test.sql` kiểm thử 5 ca nghiệp vụ.
+- **Giai đoạn 3 (Đã hoàn thành):** Cấu hình build Gradle (Supabase SDK, Serialization, Ktor), xây dựng tầng Remote Data Layer (`dto/`, `SupabaseConfig`, các `SupabaseRepositories`, `RepositoryProvider`), và tài liệu hướng dẫn vận hành chi tiết trong `HUONG_DAN_TRIEN_KHAI_SUPABASE.md`.
