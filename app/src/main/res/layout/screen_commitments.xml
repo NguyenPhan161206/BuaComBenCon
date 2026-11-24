@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Cam kết của tôi"
+        android:id="@+id/page_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="29sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="8dp" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Theo dõi số suất bạn mong muốn đồng hành."
+        android:id="@+id/page_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="12dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="24dp"
+        android:importantForAccessibility="no" />
+    <LinearLayout
+        android:id="@+id/commitment_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiPrimaryButton"
+        android:id="@+id/commitment_browse_action"
+        android:text="Xem đợt hỗ trợ"
+        android:visibility="gone" />
+    <LinearLayout
+        android:id="@+id/commitment_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:background="@drawable/card_white"
+            android:layout_marginBottom="14dp">
+            <vn.edu.buacombencon.UiTextView
+                style="@style/UiText"
+                android:text="CHỜ ĐƠN VỊ LIÊN HỆ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="@color/ui_orange"
+                android:fontFamily="sans-serif-medium"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp"
+                android:background="@drawable/ui_pill_warning" />
+            <vn.edu.buacombencon.UiTextView
+                style="@style/UiText"
+                android:text="10 suất ăn"
+                android:id="@+id/commitment_quantity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="32sp"
+                android:textColor="@color/green"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginTop="20dp" />
+            <vn.edu.buacombencon.UiTextView
+                style="@style/UiText"
+                android:text="Bữa trưa ấm lòng"
+                android:id="@+id/commitment_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="19sp"
+                android:textColor="@color/ink"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginTop="12dp" />
+            <vn.edu.buacombencon.UiTextView
+                style="@style/UiText"
+                android:text="20/11 · Theo đợt"
+                android:id="@+id/commitment_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="@color/muted"
+                android:fontFamily="sans-serif"
+                android:layout_marginTop="8dp" />
+            <vn.edu.buacombencon.UiTextView
+                style="@style/UiText"
+                android:text="Đây là số suất cam kết. Số suất xác nhận cung cấp của đợt được đơn vị cập nhật riêng."
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/muted"
+                android:fontFamily="sans-serif"
+                android:layout_marginTop="18dp" />
+            <vn.edu.buacombencon.UiButton
+                style="@style/UiSecondaryButton"
+                android:id="@+id/commitment_edit_action"
+                android:text="Điều chỉnh cam kết" />
+        </LinearLayout>
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="Bạn có thể theo dõi điều gì?"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="19sp"
+            android:textColor="@color/ink"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginTop="22dp" />
+        <View
+            android:layout_width="1px"
+            android:layout_height="12dp"
+            android:importantForAccessibility="no" />
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="Báo cáo tổng hợp phân biệt cam kết, xác nhận cung cấp, thực chuẩn bị, đã trao và chưa trao. Không công khai thông tin riêng của trẻ hoặc người chăm sóc."
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/muted"
+            android:fontFamily="sans-serif"
+            android:layout_marginTop="8dp" />
+        <View
+            android:layout_width="1px"
+            android:layout_height="10dp"
+            android:importantForAccessibility="no" />
+        <vn.edu.buacombencon.UiButton
+            style="@style/UiPrimaryButton"
+            android:id="@+id/commitment_report_action"
+            android:text="Xem kết quả các đợt" />
+    </LinearLayout>
+</LinearLayout>

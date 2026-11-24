@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Suất ăn đã được ghi nhận giao. Mã không còn hiệu lực."
+        android:id="@+id/inactive_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="20dp" />
+</merge>

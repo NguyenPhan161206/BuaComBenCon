@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="@string/impact_title"
+        android:id="@+id/page_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="29sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="8dp" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Kết quả tổng hợp từ nhóm tổ chức · Dữ liệu mẫu"
+        android:id="@+id/page_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="12dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="24dp"
+        android:importantForAccessibility="no" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:background="@drawable/ui_card_pale"
+        android:layout_marginBottom="14dp">
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="28"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="48sp"
+            android:textColor="@color/green"
+            android:fontFamily="sans-serif-medium" />
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="suất ăn đã trao trong đợt minh họa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="@color/ink"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginTop="6dp" />
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="Mỗi bữa ăn là một sự đồng hành cùng gia đình."
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/muted"
+            android:fontFamily="sans-serif"
+            android:layout_marginTop="12dp" />
+    </LinearLayout>
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Đợt hỗ trợ đã kết thúc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="19sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="22dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="12dp"
+        android:importantForAccessibility="no" />
+    <LinearLayout
+        android:id="@+id/impact_report"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+</LinearLayout>

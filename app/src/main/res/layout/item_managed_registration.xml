@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="18dp"
+    android:background="@drawable/card_white"
+    android:layout_marginBottom="14dp"
+    tools:context=".MainActivity">
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Người chăm sóc"
+        android:id="@+id/registration_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="R0013 · Tự đăng ký"
+        android:id="@+id/registration_meta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="7dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="10dp"
+        android:importantForAccessibility="no" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Đã tiếp nhận"
+        android:id="@+id/registration_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textColor="@color/green"
+        android:fontFamily="sans-serif-medium"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:background="@drawable/ui_pill" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Ghi chú"
+        android:id="@+id/registration_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="10dp"
+        android:visibility="gone" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiSecondaryButton"
+        android:id="@+id/allocate_action"
+        android:text="Kiểm tra và sắp xếp"
+        android:visibility="gone" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiSecondaryButton"
+        android:id="@+id/ticket_action"
+        android:text="Xem mã để cung cấp cho gia đình"
+        android:visibility="gone" />
+</LinearLayout>

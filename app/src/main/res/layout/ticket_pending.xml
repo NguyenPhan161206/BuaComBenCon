@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <View
+        android:layout_width="1px"
+        android:layout_height="24dp"
+        android:importantForAccessibility="no" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Đăng ký đang được kiểm tra"
+        android:id="@+id/pending_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Mã nhận chỉ được cấp khi đơn vị sắp xếp suất. Vui lòng kiểm tra lại trạng thái trước khi đến nhận."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="16dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="18dp"
+        android:importantForAccessibility="no" />
+</merge>

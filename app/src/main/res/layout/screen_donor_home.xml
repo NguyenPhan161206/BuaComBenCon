@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="MỖI SUẤT ĂN, MỘT SỰ ĐỒNG HÀNH"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textColor="@color/green"
+        android:fontFamily="sans-serif-medium"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
+        android:background="@drawable/ui_pill" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="@string/donor_home_title"
+        android:id="@+id/page_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="29sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="8dp" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Cùng nhóm hỗ trợ chăm lo bữa ăn cho người chăm sóc bệnh nhi."
+        android:id="@+id/page_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="12dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="24dp"
+        android:importantForAccessibility="no" />
+    <vn.edu.buacombencon.MealArtView
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@drawable/ui_art" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="22dp"
+        android:importantForAccessibility="no" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Chọn đợt bạn muốn đồng hành"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="19sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="22dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="12dp"
+        android:importantForAccessibility="no" />
+    <LinearLayout
+        android:id="@+id/donor_campaign_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Ứng dụng không giữ tiền và không tự xác nhận chuyển khoản. Nhà hảo tâm và đơn vị tổ chức thống nhất việc cung cấp suất ăn."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="8dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="10dp"
+        android:importantForAccessibility="no" />
+</LinearLayout>

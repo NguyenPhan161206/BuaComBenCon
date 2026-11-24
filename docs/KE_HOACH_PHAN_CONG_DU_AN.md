@@ -1,5 +1,7 @@
 # Kế hoạch phân công dự án Bữa cơm bên con trong một tháng
 
+**Bắt đầu ở [checklist triển khai theo giai đoạn](#44-checklist-triển-khai-theo-giai-đoạn).** Mỗi giai đoạn có công việc nhỏ, người phụ trách và điều kiện nghiệm thu. Các bảng công việc ở mục 9–13 dùng để giao việc chi tiết.
+
 **Thời gian:** 01 tháng, lập lịch tương đối từ **Ngày 1 đến Ngày 30**. Khi chốt ngày khởi động, Nguyên điền ngày thực tế vào bảng tiến độ; không tự mặc định một hạn nộp chưa được cung cấp.
 
 **Nhóm:** Nguyên — trưởng nhóm; Như; Tài; Duy; Hào, theo đúng thứ tự phân công của nhóm.
@@ -12,7 +14,7 @@
 
 ### 1.1. Những gì đang có
 
-Dự án Android hiện tại dùng **Java + XML**, có giao diện tiếng Việt và dữ liệu mẫu cục bộ trong `DemoStore.java`. Các màn cho người chăm sóc, điều phối viên, tình nguyện viên và nhà hảo tâm đã có thể trình diễn bằng dữ liệu mẫu. Có APK được build bằng công cụ Android SDK và ảnh giao diện dựng qua Android Studio layoutlib.
+Dự án Android hiện tại dùng **XML cho bố cục** và Kotlin cho điều hướng, gắn dữ liệu và xử lý thao tác. Các màn cho người chăm sóc, điều phối viên, tình nguyện viên và nhà hảo tâm đã có thể trình diễn với dữ liệu mẫu cục bộ trong `DemoStore.kt`. Có APK debug và ảnh giao diện dựng qua Android Studio layoutlib.
 
 Các phần cần làm tiếp là tài khoản thật, kiểm tra quyền tại server, database dùng chung, API, giao nhận đồng thời trên nhiều thiết bị, quét QR bằng camera, thông báo trong ứng dụng, triển khai và kiểm thử trên thiết bị. Build APK hoặc có giao diện chưa đủ để kết luận những phần này hoạt động.
 
@@ -128,13 +130,92 @@ Không đánh dấu qua mốc chỉ vì đến ngày dự kiến. Nếu một m�
 | Tuần 4 — Ngày 22–28 | Đóng luồng còn thiếu, rà bảo mật/nghiệp vụ, điều phối release | Sửa lỗi app, kiểm tra thiết bị, cấu hình release và tài liệu gia đình | Sửa lỗi API, triển khai HTTPS, cấu hình SMTP/DB, log và tài liệu API | Sửa lỗi các vai trò hỗ trợ, camera, lỗi mạng; tài liệu thao tác | Chạy E2E, test tải nhỏ, thử khôi phục, báo cáo QA và đối chiếu số liệu |
 | Ngày 29–30 | Chốt nghiệm thu, tổng hợp báo cáo và bàn giao | APK cuối, hướng dẫn cài và trình diễn gia đình | Cấu hình triển khai và hướng dẫn chạy API | Trình diễn điều phối/phát suất/nhà hảo tâm | Bàn giao migration, backup, restore và kết quả kiểm thử |
 
+### 4.4. Checklist triển khai theo giai đoạn
+
+Phạm vi từ đề xuất Word là **một nhóm thiện nguyện, một điểm phát, bốn vai trò và một quy trình từ đăng ký đến đối chiếu suất ăn**. Lịch 30 ngày, phân công, backend và PostgreSQL theo kế hoạch kỹ thuật của nhóm. Mỗi ô chỉ được đánh dấu khi có kết quả có thể kiểm tra, chẳng hạn PR, kết quả kiểm thử hoặc biên bản nghiệm thu. [Đề xuất sản phẩm phiên bản 3.0](source/2403700211_2403700101_2403700160_2403700235_2403700173.docx)
+
+#### G0 · Ngày 1–2 · Chốt quy trình và phạm vi
+
+- [ ] **Nguyên** trao đổi với đại diện nhóm tổ chức và người chăm sóc khi có thể. Ghi cách đăng ký, phát suất và tổng hợp hiện tại, cùng các giả định còn cần kiểm chứng.
+- [ ] **Nguyên, Hào** chốt tiêu chí đủ điều kiện, thời hạn, quy tắc xếp theo lượt hợp lệ, xử lý hồ sơ ngoại lệ có lý do, hủy và cấp lại suất.
+- [ ] **Như, Duy** lập danh sách màn XML theo bốn vai trò. Đánh dấu màn đã có dữ liệu mẫu, màn phải nối API và màn cần bổ sung như đăng nhập, thông báo và quét QR.
+- [ ] **Nguyên, Tài, Hào** chốt dữ liệu tối thiểu, người được xem và trường hợp đăng ký hộ có sự đồng ý. Báo cáo nhà hảo tâm chỉ dùng số liệu tổng hợp.
+- [ ] **Cả nhóm** chốt ngày bắt đầu, trách nhiệm, tiêu chí nghiệm thu và kịch bản giả lập 35 hồ sơ hợp lệ cho 30 suất.
+
+**Qua mốc khi** nhóm có tài liệu phạm vi, quy tắc nghiệp vụ và danh sách màn cần làm. Các thông tin chưa xác minh được ghi rõ.
+
+#### G1 · Ngày 3–5 · Thiết kế dữ liệu và giao diện kết nối
+
+- [ ] **Hào** vẽ ERD cho tài khoản, đợt, đăng ký, mã nhận, lượt giao, cam kết, thông báo và nhật ký. Xác định khóa, ràng buộc và dữ liệu kiểm thử.
+- [ ] **Nguyên, Tài** viết OpenAPI cho bốn vai trò. Chốt trường dữ liệu, trạng thái, lỗi, quyền theo từng đợt và thứ tự thực hiện các thao tác.
+- [ ] **Như, Duy** xây lớp gọi API và lớp truy xuất dữ liệu. Nối thử XML với phản hồi giả lập đúng hợp đồng, gồm trạng thái tải, trống và lỗi.
+- [ ] **Tài, Hào** thống nhất cấu hình dev, test và staging, cách chạy migration trên DB rỗng và cách nạp dữ liệu mẫu.
+
+**Qua mốc khi** Android hiển thị được dữ liệu giả lập đúng hợp đồng, còn backend và database thống nhất tên trường, trạng thái và quyền.
+
+#### G2 · Ngày 6–9 · Dựng API, PostgreSQL và đăng nhập
+
+- [ ] **Hào** chạy migration và seed trên PostgreSQL dev/test. Tạo tài khoản mẫu cho bốn vai trò và dữ liệu một điểm phát.
+- [ ] **Tài** kết nối API với DB. Làm xác thực, phiên đăng nhập, lỗi có mã rõ ràng và kiểm tra quyền trên server.
+- [ ] **Như** kết nối đăng nhập thật từ Android và xử lý hết phiên, đăng xuất. Hoàn thiện đăng ký, xác minh email và khôi phục mật khẩu theo lịch NH04.
+- [ ] **Tài, Hào** kiểm tra tài khoản gia đình chỉ đọc hồ sơ của mình, tình nguyện viên chỉ thao tác đợt được giao và nhà hảo tâm chỉ xem dữ liệu được phép.
+
+**Qua mốc khi** có thể dựng DB mới, đăng nhập từ Android và chứng minh server chặn cả quyền sai vai trò lẫn quyền ngoài phạm vi dữ liệu.
+
+#### G3 · Ngày 10–15 · Mở đợt, tiếp nhận, sắp xếp và cấp mã
+
+- [ ] **Tài, Duy** làm luồng điều phối tạo đợt, công bố tiêu chí, lịch, hạn đăng ký, điểm nhận và số suất xác nhận. Áp dụng đóng tiếp nhận theo trạng thái và hạn ở server.
+- [ ] **Nguyên, Như** nối danh sách đợt, chi tiết và tự đăng ký. Lưu hồ sơ vào DB, kiểm tra trùng và hiển thị “Đã tiếp nhận” ngay sau khi gửi hợp lệ.
+- [ ] **Nguyên, Duy** làm đăng ký hộ có sự đồng ý liên hệ. Điều phối viên xem được hồ sơ, xét điều kiện và ghi lý do khi xử lý ngoại lệ.
+- [ ] **Nguyên, Hào** thực hiện phân bổ và danh sách chờ có thứ tự. Kiểm tra gửi đồng thời khi chỉ còn một suất, hủy và cấp lại cho hồ sơ kế tiếp.
+- [ ] **Nguyên, Như, Duy** cấp QR và mã ngắn từ server theo mỗi lượt được sắp xếp. Gia đình xem được mã và hướng dẫn nhận, điều phối viên cung cấp mã trực tiếp cho người được đăng ký hộ. Hoàn thiện màn theo dõi và lấy mã theo lịch NH06.
+
+**Qua mốc khi** API chuyển đúng trạng thái trên PostgreSQL, cấp 30 suất cho 35 hồ sơ hợp lệ theo quy tắc đã chốt và thu hồi mã khi hủy. Còn 5 hồ sơ chờ trước khi thử ca hủy và cấp lại.
+
+#### G4 · Ngày 16–20 · Phát suất, đồng hành và đối chiếu
+
+- [ ] **Duy, Nguyên** nối màn tình nguyện viên với API. Cho phép chọn đợt được giao, quét QR hoặc nhập mã ngắn, kiểm tra rồi xác nhận sau khi trao suất.
+- [ ] **Nguyên, Hào** kiểm tra mã sai đợt, đã dùng, hết hạn và bị thu hồi. Hai thiết bị xác nhận cùng một mã chỉ tạo một lượt giao.
+- [ ] **Duy, Nguyên** xử lý thiếu mã, mất mạng và kết quả gửi chưa rõ. Chuyển điều phối viên hỗ trợ với danh sách dự phòng, rồi đối chiếu trước khi ghi đã giao.
+- [ ] **Tài, Duy** cho nhà hảo tâm gửi nhiều cam kết theo đợt và ghi nhận mong muốn theo tuần hoặc tháng. Điều phối viên xác nhận số có thể cung cấp cho từng đợt.
+- [ ] **Tài, Duy, Hào** làm màn báo cáo cam kết, xác nhận, thực chuẩn bị, đã trao, chưa trao và ghi chú xử lý phần còn lại. Đối chiếu số đã trao với lượt giao đã lưu.
+
+**Qua mốc khi** quét và nhập mã đều dẫn đến cùng kết quả giao nhận. Báo cáo giả lập với 30 suất chuẩn bị, 28 suất đã trao và 2 suất chưa trao khớp dữ liệu lưu.
+
+#### G5 · Ngày 21–24 · Tích hợp đủ bốn vai trò
+
+- [ ] **Tài, Như** đưa kết quả sắp xếp, hủy và đổi lịch vào hộp thông báo trong app. Kiểm tra quyền xem và cập nhật sau khi tải lại.
+- [ ] **Như, Duy** hoàn tất nối API cho các màn bàn giao. Kiểm tra gửi lặp, xoay màn hình, màn hình nhỏ, chữ lớn, bàn phím, quay lại và dữ liệu sau đăng xuất.
+- [ ] **Hào** chạy từ tạo đợt đến báo cáo trên staging bằng tài khoản và dữ liệu giả. Thử tự đăng ký, đăng ký hộ, danh sách chờ, hủy, cấp lại, phát suất và cam kết của nhà hảo tâm.
+- [ ] **Cả nhóm** sửa lỗi chặn nghiệm thu, chạy lại các ca liên quan và lưu bằng chứng theo môi trường, phiên bản và kết quả.
+
+**Qua mốc khi** cả bốn vai trò chạy trên cùng API và database staging. Các luồng đúng quyền, sai quyền và mất mạng có kết quả kiểm tra.
+
+#### G6 · Ngày 25–28 · Chạy thử bản bàn giao
+
+- [ ] **Tài, Hào** cấu hình HTTPS, PostgreSQL có lưu trữ bền vững, migration, sao lưu và nhật ký đã che dữ liệu riêng.
+- [ ] **Như, Duy** build APK release, thử cài và chạy luồng trọn vẹn trên thiết bị. Dùng camera thật để thử quét mã và một thiết bị thứ hai để kiểm tra ghi nhận trùng.
+- [ ] **Hào** thử sao lưu và khôi phục vào DB riêng. Kiểm tra lại số hồ sơ, lượt giao và báo cáo sau khôi phục.
+- [ ] **Nguyên, cả nhóm** chạy thử với dữ liệu giả. Ghi mức độ dễ đăng ký và hiểu kết quả của gia đình, thời gian kiểm tra tại điểm phát, thời gian đối chiếu của điều phối viên và các điểm còn vướng.
+
+**Qua mốc khi** APK release cài được, chạy trọn luồng với API HTTPS và có biên bản kiểm thử thiết bị cùng kết quả khôi phục DB.
+
+#### G7 · Ngày 29–30 · Nghiệm thu và bàn giao
+
+- [ ] **Nguyên** chạy kịch bản demo cuối và đối chiếu từng mục nghiệm thu ở phần 16.
+- [ ] **Như, Duy** bàn giao APK, tài khoản demo, hướng dẫn cài và hướng dẫn theo bốn vai trò.
+- [ ] **Tài, Hào** bàn giao mã nguồn, tài liệu API, migration, seed, hướng dẫn dựng lại hệ thống, thao tác sao lưu và phục hồi.
+- [ ] **Cả nhóm** chốt lỗi còn mở, người tiếp nhận, phạm vi chạy thử và hồ sơ nộp. Chỉ tiến hành thử với gia đình thật khi đơn vị tổ chức đồng ý và xác nhận quy trình tại điểm phát.
+
+**Qua mốc khi** người tiếp nhận có thể dựng lại hệ thống, cài app và trình diễn trọn luồng từ tạo đợt đến đối chiếu bằng dữ liệu giả.
+
 ## 5. Kiến trúc và cấu trúc dự án dự kiến
 
 ### 5.1. Công nghệ
 
 | Phần | Chọn cho kế hoạch tháng này | Người phụ trách |
 | --- | --- | --- |
-| Android | Java + XML, giữ thiết kế hiện có; tách màn khỏi dữ liệu | Như, Duy |
+| Android | Kotlin + XML, giữ thiết kế hiện có và tách màn khỏi dữ liệu | Như, Duy |
 | Gọi API | Một API client dùng chung, HTTP client và bộ chuyển JSON; chọn và khóa phiên bản ở G1 | Như; Tài hỗ trợ hợp đồng |
 | Backend | Node.js + Express, REST API; một backend tổ chức theo module nghiệp vụ | Tài, Nguyên |
 | Database | PostgreSQL; migration và seed có phiên bản, công cụ migration thống nhất tại G1 | Hào |
@@ -152,7 +233,7 @@ Chốt phiên bản runtime, thư viện và image cụ thể ở G1, ghi trong 
 BuaComBenCon/
 ├── app/                         # Android hiện có
 │   └── src/main/
-│       ├── java/vn/edu/buacombencon/
+│       ├── kotlin/vn/edu/buacombencon/
 │       │   ├── core/            # API client, session, kết quả API, điều hướng chung
 │       │   ├── data/            # DTO, repository, ánh xạ dữ liệu
 │       │   ├── ui/auth/         # Như
@@ -714,7 +795,7 @@ Nếu camera chưa đạt nhưng nhập mã đã đạt, nhóm có thể trình 
 ## 22. Nguồn và tài liệu tham khảo
 
 - Yêu cầu sản phẩm: `docs/source/2403700211_2403700101_2403700160_2403700235_2403700173.docx`, “Đề xuất ứng dụng Bữa cơm bên con”, phiên bản 3.0.
-- Hiện trạng Android: `README.md`, `docs/REQUIREMENTS.md`, `docs/QA.md`, `MainActivity.java` và `DemoStore.java` trong dự án hiện có.
+- Hiện trạng Android: `README.md`, `docs/REQUIREMENTS.md`, `docs/QA.md`, `MainActivity.kt` và `DemoStore.kt`.
 - [Express production security](https://expressjs.com/en/advanced/best-practice-security/): tham khảo TLS, kiểm tra đầu vào và bảo vệ dịch vụ.
 - [PostgreSQL explicit locking](https://www.postgresql.org/docs/current/explicit-locking.html): tham khảo khóa/transaction cho thao tác đồng thời.
 - [PostgreSQL backup and restore](https://www.postgresql.org/docs/current/backup.html): tham khảo các phương án sao lưu và khôi phục.

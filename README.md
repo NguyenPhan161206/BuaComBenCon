@@ -1,8 +1,10 @@
 # Bữa cơm bên con
 
-Dự án giao diện Android native bằng **Java + XML**, dựa trên đề xuất ứng dụng Bữa cơm bên con trong file Word của nhóm. Mở được như một dự án Android Studio; có APK debug để cài thử. Giao diện tiếng Việt, nền kem và xanh lá, bố cục cuộn và thanh điều hướng theo từng vai trò.
+Dự án Android native dùng **XML cho bố cục giao diện** và **Kotlin** cho điều hướng, gắn dữ liệu và xử lý thao tác. Ứng dụng dựa trên đề xuất Bữa cơm bên con trong file Word của nhóm. Giao diện tiếng Việt, nền kem và xanh lá, bố cục cuộn và thanh điều hướng theo từng vai trò.
 
-**Kế hoạch hoàn thiện trong 1 tháng:** [Phân công Nguyên, Như, Tài, Duy, Hào](docs/KE_HOACH_PHAN_CONG_DU_AN.md), gồm 60 nhiệm vụ, lịch ngày 1–30, Android, backend, database, kiểm thử, triển khai và bàn giao. Backend và database trong tài liệu là phần cần triển khai tiếp; mã nguồn hiện tại là bản UI có dữ liệu mẫu.
+**Đặc tả yêu cầu MVP.** [Phạm vi, quyền, quy tắc nghiệp vụ và tiêu chí nghiệm thu](docs/DAC_TA_YEU_CAU_BUA_COM_BEN_CON.md)
+
+**Kế hoạch hoàn thiện trong 1 tháng.** [Checklist triển khai G0–G7](docs/KE_HOACH_PHAN_CONG_DU_AN.md#44-checklist-triển-khai-theo-giai-đoạn) có người phụ trách và điều kiện nghiệm thu từng giai đoạn. [Bản phân công đầy đủ](docs/KE_HOACH_PHAN_CONG_DU_AN.md) có 60 nhiệm vụ cho Nguyên, Như, Tài, Duy và Hào. Mã nguồn hiện tại chạy với dữ liệu mẫu cục bộ. Backend và database nằm trong kế hoạch triển khai.
 
 Ảnh tổng quan: [Xem giao diện](docs/ui-overview.png). APK cài thử: [BuaComBenCon-debug.apk](apk/BuaComBenCon-debug.apk).
 
@@ -10,7 +12,7 @@ Dự án giao diện Android native bằng **Java + XML**, dựa trên đề xu�
 
 1. Chọn **File → Open**, mở thư mục `BuaComBenCon` này (thư mục có `settings.gradle.kts`).
 2. Trong **Settings → Build, Execution, Deployment → Build Tools → Gradle**, chọn Gradle JDK có sẵn của Android Studio. Máy hiện tại có `/home/binhnguyen/android-studio/jbr`.
-3. Chờ **Gradle Sync**. Dự án dùng AGP `9.4.1`, Gradle `9.6.0`, Android SDK Platform `36` và Java source level `11`. Android Studio có thể cần tải thành phần Gradle/plugin nếu máy chưa có cache.
+3. Chờ **Gradle Sync**. Dự án dùng AGP `9.4.1` với Kotlin tích hợp, Gradle `9.6.0`, Android SDK Platform `36` và đích JVM `11`. Android Studio có thể cần tải thành phần build ở lần đầu.
 4. Chọn cấu hình **Bữa cơm bên con**, module `app`, rồi chọn điện thoại hoặc emulator API 26 trở lên. Máy này đã có AVD `Pixel_10_API_36`.
 5. Bấm **Run ▶**. Ở góc phải thanh trên cùng, bấm **Gia đình ⌄** để đổi vai trò trình diễn.
 
@@ -55,16 +57,17 @@ Chọn một đợt, gửi số suất mong muốn hỗ trợ rồi xem **Cam k�
 
 ## Mã nguồn để chỉnh giao diện
 
-- `app/src/main/res/layout/activity_main.xml`: thanh trên cùng, vùng nội dung cuộn và thanh điều hướng.
-- `app/src/main/res/layout/screen_home.xml`: bố cục trang chủ, khối minh họa và danh sách đợt.
-- `app/src/main/res/layout/screen_form.xml`: biểu mẫu đăng ký và đăng ký hộ.
-- `app/src/main/res/values/`: màu, chuỗi giao diện và style.
-- `app/src/main/java/vn/edu/buacombencon/MainActivity.java`: dựng nội dung từng màn, điều hướng, kiểm tra biểu mẫu và xử lý thao tác.
-- `DemoStore.java`: dữ liệu mẫu và trạng thái lưu bằng SharedPreferences; không gọi máy chủ.
-- `MealArtView.java`, `UiIcon.java`: minh họa và biểu tượng vector vẽ bằng Android Canvas.
-- `QrCode.java`, `QrView.java`: mã QR thật chứa đúng mã ngắn, không chứa thông tin người nhận.
+| Phần giao diện | Layout trong `app/src/main/res/layout/` |
+| --- | --- |
+| Khung ứng dụng và điều hướng | `activity_main.xml`, `item_nav.xml`, `item_back.xml` |
+| Người chăm sóc | `screen_home.xml`, `screen_detail.xml`, `screen_form.xml`, `screen_success.xml`, `screen_my_registrations.xml`, `screen_ticket.xml`, `screen_impact.xml` |
+| Điều phối | `screen_dashboard.xml`, `screen_campaigns.xml`, `screen_manage.xml`, `screen_create.xml`, `screen_form.xml` cho đăng ký hộ, `dialog_supply.xml` |
+| Phát suất | `screen_distribution.xml`, `screen_handed_over.xml`, `screen_help.xml` |
+| Nhà hảo tâm | `screen_donor_home.xml`, `screen_pledge.xml`, `screen_commitments.xml` |
+| Báo cáo và tài khoản | `screen_reports.xml`, `item_report.xml`, `screen_profile.xml` |
+| Thẻ danh sách và trạng thái mã | `item_*.xml`, `ticket_*.xml` |
 
-Mở XML trong **Code / Split / Design** của Android Studio. Phần nội dung dựng bằng Java được chỉnh trong các phương thức cùng tên như `home()`, `ticket()`, `manage()`, `distribution()`, `reports()`.
+Mở các layout trong **Code / Split / Design** của Android Studio. Màu, chuỗi và style dùng chung ở `res/values/`, nền thẻ và nút ở `res/drawable/`. Trong `app/src/main/kotlin/`, `MainActivity.kt` nạp layout, điền dữ liệu và xử lý điều hướng. `DemoStore.kt` lưu dữ liệu mẫu bằng SharedPreferences. Các view khai báo trong XML như `MealArtView`, `UiIcon` và `QrView` dùng Canvas để vẽ minh họa, biểu tượng và QR.
 
 ## Build
 
@@ -80,7 +83,7 @@ Nếu cần dùng đúng bộ SDK/JDK đã cài, có thể build độc lập v�
 ./tools/build-sdk.sh
 ```
 
-Script dùng SDK trong `ANDROID_HOME` hoặc `ANDROID_SDK_ROOT`, JDK trong `JAVA_HOME`; nếu chưa đặt sẽ dùng đường dẫn đã kiểm tra trên máy hiện tại. Cần Build Tools `36.0.0`, Platform `android-36`, JDK và Python 3. APK tạo tại `app/build/outputs/apk/debug/app-debug.apk`.
+Script dùng SDK trong `ANDROID_HOME` hoặc `ANDROID_SDK_ROOT`, JDK trong `JAVA_HOME` và Kotlin đi kèm Android Studio. Có thể đặt `BCC_KOTLIN_DIR` để chọn thư mục trình biên dịch khác. Cần Build Tools `37.0.0`, Platform `android-36`, JDK và Python 3. APK tạo tại `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Phạm vi và bằng chứng kiểm tra
 
@@ -88,7 +91,7 @@ Script dùng SDK trong `ANDROID_HOME` hoặc `ANDROID_SDK_ROOT`, JDK trong `JAVA
 
 Chưa tích hợp đăng nhập/phân quyền thật, máy chủ, đồng bộ nhiều thiết bị, xét điều kiện tự động, thông báo đẩy, SMS, camera quét QR, thanh toán hoặc xác nhận giao nhận ngoài đời. Thời hạn đăng ký nhập dạng văn bản; điều phối viên bật/tắt tiếp nhận trong bản UI, chưa có bộ lập lịch tự đóng theo giờ. Một cam kết nhà hảo tâm đang hoạt động được giữ để trình diễn; gửi lại sẽ thay thế cam kết mẫu trước. Chưa có màn duyệt xác nhận cam kết nhà tài trợ riêng.
 
-APK đã biên dịch tài nguyên và Java, chuyển DEX, đóng gói và xác minh chữ ký bằng Android SDK. Các kiểm tra hành vi mẫu và kiểm tra giải mã QR độc lập có trong `docs/qa/`. Ảnh xem trước được dựng từ chính View/XML bằng **layoutlib của Android Studio**, không phải ảnh chụp emulator. Chạy Gradle và ADB trong môi trường thực thi hiện tại bị chặn tạo socket, nên **chưa xác nhận Run trên emulator/điện thoại hoặc Gradle Sync qua IDE**.
+APK Kotlin/XML đã qua Gradle build, lint và xác minh chữ ký. Có 32 cấu hình layoutlib được so sánh trước và sau khi chuyển sang Kotlin. Cả 64 cặp ảnh đầu và cuối vùng cuộn trùng từng pixel. Bản cập nhật này chưa được xác nhận bằng Android Studio Run, emulator hoặc thiết bị thật.
 
 Xem [đối chiếu yêu cầu](docs/REQUIREMENTS.md) và [kiểm tra và ảnh giao diện](docs/QA.md).
 

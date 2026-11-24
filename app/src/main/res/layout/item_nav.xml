@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_weight="1"
+    android:gravity="center"
+    android:paddingLeft="2dp"
+    android:paddingRight="2dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp"
+    android:minHeight="56dp"
+    android:background="@drawable/ui_nav"
+    tools:context=".MainActivity">
+    <vn.edu.buacombencon.UiIcon
+        android:id="@+id/nav_icon"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        app:iconKind="home"
+        app:iconColor="@color/green" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Trang chủ"
+        android:id="@+id/nav_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textColor="@color/green"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:paddingTop="6dp" />
+</LinearLayout>

@@ -1,0 +1,8 @@
+<resources>
+    <string name="dashboard_title">Cùng nhau,\nlo từng bữa cơm.</string>
+    <string name="reports_title">Từng suất ăn,\nđược ghi nhận rõ.</string>
+    <string name="donor_home_title">Góp một bữa cơm,\ntiếp thêm vững lòng.</string>
+    <string name="impact_title">Những bữa cơm\nđược sẻ chia.</string>
+    <string name="registration_success_title">Đã tiếp nhận\nđăng ký của bạn</string>
+    <string name="distribution_title">Trao một bữa cơm,\ngửi một niềm vui.</string>
+</resources>

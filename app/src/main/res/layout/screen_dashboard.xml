@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="@string/dashboard_title"
+        android:id="@+id/page_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="29sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="8dp" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Không gian điều phối · Điểm phát An Tâm (mẫu)"
+        android:id="@+id/page_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="12dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="24dp"
+        android:importantForAccessibility="no" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:background="@drawable/ui_card_pale"
+        android:layout_marginBottom="14dp">
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="ĐỢT ĐANG PHÁT"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:textColor="@color/green"
+            android:fontFamily="sans-serif-medium"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="7dp"
+            android:paddingBottom="7dp"
+            android:background="@drawable/ui_pill_white" />
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="Bữa trưa ấm lòng"
+            android:id="@+id/dashboard_campaign"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textColor="@color/ink"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginTop="14dp" />
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="20/11 · 11:00 – 12:00"
+            android:id="@+id/dashboard_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/muted"
+            android:fontFamily="sans-serif"
+            android:layout_marginTop="10dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="top"
+            android:id="@+id/metrics"
+            android:layout_marginTop="18dp">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+                <vn.edu.buacombencon.UiTextView
+                    style="@style/UiText"
+                    android:text="0"
+                    android:id="@+id/metric_value_0"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="27sp"
+                    android:textColor="@color/green"
+                    android:fontFamily="sans-serif-medium" />
+                <vn.edu.buacombencon.UiTextView
+                    style="@style/UiText"
+                    android:text="Đã sắp xếp"
+                    android:id="@+id/metric_name_0"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:textColor="@color/muted"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+                <vn.edu.buacombencon.UiTextView
+                    style="@style/UiText"
+                    android:text="0"
+                    android:id="@+id/metric_value_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="27sp"
+                    android:textColor="@color/green"
+                    android:fontFamily="sans-serif-medium" />
+                <vn.edu.buacombencon.UiTextView
+                    style="@style/UiText"
+                    android:text="Đã trao"
+                    android:id="@+id/metric_name_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:textColor="@color/muted"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+                <vn.edu.buacombencon.UiTextView
+                    style="@style/UiText"
+                    android:text="0"
+                    android:id="@+id/metric_value_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="27sp"
+                    android:textColor="@color/green"
+                    android:fontFamily="sans-serif-medium" />
+                <vn.edu.buacombencon.UiTextView
+                    style="@style/UiText"
+                    android:text="Đang chờ"
+                    android:id="@+id/metric_name_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:textColor="@color/muted"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+        </LinearLayout>
+        <vn.edu.buacombencon.UiButton
+            style="@style/UiPrimaryButton"
+            android:id="@+id/manage_action"
+            android:text="Tiếp tục điều phối  →" />
+    </LinearLayout>
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Việc cần theo dõi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="19sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="22dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="12dp"
+        android:importantForAccessibility="no" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:background="@drawable/card_white"
+        android:layout_marginBottom="14dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <vn.edu.buacombencon.UiIcon
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                app:iconKind="ticket"
+                app:iconColor="@color/green" />
+            <vn.edu.buacombencon.UiTextView
+                style="@style/UiText"
+                android:text="0 đăng ký đang chờ kiểm tra"
+                android:id="@+id/pending_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="@color/muted"
+                android:fontFamily="sans-serif"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp" />
+        </LinearLayout>
+        <View
+            android:layout_width="1px"
+            android:layout_height="16dp"
+            android:importantForAccessibility="no" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <vn.edu.buacombencon.UiIcon
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                app:iconKind="clock"
+                app:iconColor="@color/green" />
+            <vn.edu.buacombencon.UiTextView
+                style="@style/UiText"
+                android:text="5 hồ sơ trong danh sách chờ"
+                android:id="@+id/waiting_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="@color/muted"
+                android:fontFamily="sans-serif"
+                android:layout_weight="1"
+                android:layout_marginLeft="10dp" />
+        </LinearLayout>
+    </LinearLayout>
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Kiểm tra hồ sơ đủ điều kiện, rồi sắp xếp theo thứ tự đăng ký hợp lệ. Người đăng ký hộ được theo dõi trong cùng danh sách."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="8dp" />
+    <View
+        android:layout_width="1px"
+        android:layout_height="10dp"
+        android:importantForAccessibility="no" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiPrimaryButton"
+        android:id="@+id/create_action"
+        android:text="Tạo đợt hỗ trợ mới" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiSecondaryButton"
+        android:id="@+id/campaigns_action"
+        android:text="Xem tất cả đợt hỗ trợ" />
+</LinearLayout>

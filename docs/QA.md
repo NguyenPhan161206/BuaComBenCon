@@ -1,5 +1,26 @@
 # Kiểm tra dự án giao diện
 
+## Bản Kotlin và XML
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Gradle `:app:assembleDebug :app:lintDebug` | Thành công. Kotlin biên dịch, tác vụ Java báo `NO-SOURCE`. Lint có 0 lỗi và 330 cảnh báo. |
+| Build bằng Android SDK | Thành công. APK trong `apk/` có chữ ký v2/v3 và cùng chứng chỉ debug với APK trước. |
+| Nghiệp vụ và QR | 18/18 ca kiểm tra cục bộ đạt. OpenCV đọc đúng mã mẫu `BC0013`. |
+| Giao diện qua layoutlib | 32 cấu hình đạt, bao gồm 5 trạng thái vé nhận. Cả 64 cặp ảnh trước và sau khi chuyển Kotlin trùng từng pixel. |
+| Chạy trên Android | Chưa kiểm tra bản Kotlin qua Android Studio Run, emulator hoặc điện thoại thật. |
+
+## Bản chuyển bố cục sang XML
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Build Android SDK và chữ ký APK | AAPT2, Java, DEX và chữ ký v2/v3 đạt. APK trong `apk/` dùng cùng chứng chỉ debug với APK đã có. |
+| Kiểm tra nghiệp vụ cục bộ | 18/18 kiểm tra `DemoStore` đạt. OpenCV giải mã đúng `BC0013` từ QR mẫu. |
+| So sánh với trạng thái trước chuyển đổi | 32 cấu hình layoutlib, gồm cả bốn vai trò, các trạng thái nhận suất, màn nhỏ, chữ 130% và chế độ ngang. Cả 64 cặp ảnh đầu và cuối vùng cuộn trùng từng pixel. |
+| Kiểm tra trên Android | Chưa xác nhận chạy bản cập nhật qua Android Studio, emulator hoặc thiết bị thật. |
+
+## Kiểm tra giao diện gốc
+
 Kiểm tra ngày 19/11/2026. Phân biệt rõ kết quả biên dịch, dựng giao diện trên máy chủ và chạy trên thiết bị.
 
 | Hạng mục | Kết quả |
@@ -56,6 +77,6 @@ Trên máy hiện tại:
 ./tools/qa/check-local.sh --render
 ```
 
-Kiểm tra native dùng layoutlib có sẵn trong Android Studio, không thêm thư viện vào app. Có thể đặt `STUDIO_DIR`, `ANDROID_HOME`, `JAVA_HOME` khi chạy trên máy khác. Giải mã độc lập cần Python có OpenCV (`cv2`). Dự án app không phụ thuộc Python hoặc OpenCV khi chạy trên Android.
+Kiểm tra native dùng layoutlib và trình biên dịch Kotlin có sẵn trong Android Studio. Có thể đặt `STUDIO_DIR`, `ANDROID_HOME`, `JAVA_HOME` và `BCC_KOTLIN_DIR` khi chạy trên máy khác. Đặt `BCC_QA_OUTPUT` để ghi kết quả sang thư mục khác. Giải mã độc lập cần Python có OpenCV (`cv2`).
 
 Android 16 thay đổi cách xử lý Back; mã ứng dụng có đăng ký `OnBackInvokedCallback` từ API 33 và xử lý insets cho system bars/bàn phím. Việc kiểm tra cử chỉ, thanh hệ thống và bàn phím thực tế vẫn cần chạy trên Android. Tham chiếu: [thay đổi Android 16](https://developer.android.com/about/versions/16/behavior-changes-16#predictive-back).

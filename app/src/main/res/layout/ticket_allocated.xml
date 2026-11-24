@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <vn.edu.buacombencon.QrView
+        android:id="@+id/ticket_qr"
+        android:layout_width="230dp"
+        android:layout_height="230dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="BC0013"
+        android:id="@+id/ticket_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:textColor="@color/ink"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.13"
+        android:gravity="center" />
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="Mã nhận 1 suất · dùng một lần cho đợt này"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="12dp" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiSecondaryButton"
+        android:id="@+id/copy_code_action"
+        android:text="Sao chép mã ngắn" />
+</merge>

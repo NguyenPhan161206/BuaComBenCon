@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="18dp"
+    android:background="@drawable/card_white"
+    android:layout_marginBottom="14dp"
+    tools:context=".MainActivity">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <vn.edu.buacombencon.UiIcon
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            app:iconKind="check"
+            app:iconColor="@color/green" />
+        <vn.edu.buacombencon.UiTextView
+            style="@style/UiText"
+            android:text="Người chăm sóc"
+            android:id="@+id/recipient_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="@color/muted"
+            android:fontFamily="sans-serif"
+            android:layout_weight="1"
+            android:layout_marginLeft="10dp" />
+    </LinearLayout>
+    <vn.edu.buacombencon.UiTextView
+        style="@style/UiText"
+        android:text="BC0013 · Đã dùng · 1 suất"
+        android:id="@+id/recipient_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/muted"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="10dp" />
+</LinearLayout>

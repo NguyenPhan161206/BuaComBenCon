@@ -1,18 +1,25 @@
 #!/usr/bin/env bash
-# Build the native Java UI using the Android SDK, without a Gradle download.
+# Build the Kotlin/XML app using locally installed Android SDK tools.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 sdk_dir="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/home/binhnguyen/Android/Sdk}}"
 jdk_dir="${JAVA_HOME:-/home/binhnguyen/android-studio/jbr}"
+kotlin_dir="${BCC_KOTLIN_DIR:-${STUDIO_DIR:-/home/binhnguyen/android-studio}/plugins/Kotlin/kotlinc}"
+export JAVA_HOME="$jdk_dir"
 export PATH="$jdk_dir/bin:$PATH"
-bt="$sdk_dir/build-tools/36.0.0"
+bt="$sdk_dir/build-tools/37.0.0"
 platform="$sdk_dir/platforms/android-36/android.jar"
 out="$PWD/app/build/sdk-debug"
 for task_tool in aapt2 d8 zipalign apksigner; do
   test -x "$bt/$task_tool" || { echo "Missing Android build tool: $bt/$task_tool"; exit 1; }
 done
 test -f "$platform" || { echo "Install Android SDK platform 36."; exit 1; }
+test -x "$kotlin_dir/bin/kotlinc" && test -f "$kotlin_dir/lib/kotlin-stdlib.jar" || {
+  echo "Set BCC_KOTLIN_DIR to the directory of the Kotlin compiler bundled with Android Studio."
+  exit 1
+}
 mkdir -p "$out/gen" "$out/classes" "$out/dex"
+find "$out/gen" "$out/classes" "$out/dex" -type f -delete
 "$bt/aapt2" compile --dir app/src/main/res -o "$out/resources.zip"
 python3 - "$out/AndroidManifest.xml" <<'MANIFEST'
 import sys
@@ -23,10 +30,11 @@ manifest=manifest.replace('<application ', '<uses-sdk android:minSdkVersion="26"
 Path(sys.argv[1]).write_text(manifest)
 MANIFEST
 "$bt/aapt2" link -o "$out/unsigned.apk" -I "$platform" --manifest "$out/AndroidManifest.xml" --java "$out/gen" "$out/resources.zip"
-rg --files app/src/main/java "$out/gen" -g '*.java' > "$out/sources.txt"
-javac -encoding UTF-8 --release 11 -classpath "$platform" -d "$out/classes" @"$out/sources.txt"
+mapfile -t generated_sources < <(rg --files "$out/gen" -g '*.java')
+javac -encoding UTF-8 --release 11 -classpath "$platform" -d "$out/classes" "${generated_sources[@]}"
+"$kotlin_dir/bin/kotlinc" app/src/main/kotlin -jvm-target 11 -classpath "$platform:$out/classes" -d "$out/classes"
 jar cf "$out/classes.jar" -C "$out/classes" .
-"$bt/d8" --lib "$platform" --min-api 26 --output "$out/dex" "$out/classes.jar"
+"$bt/d8" --lib "$platform" --min-api 26 --output "$out/dex" "$out/classes.jar" "$kotlin_dir/lib/kotlin-stdlib.jar"
 python3 - "$out" <<'DEX'
 from pathlib import Path
 import sys,zipfile
