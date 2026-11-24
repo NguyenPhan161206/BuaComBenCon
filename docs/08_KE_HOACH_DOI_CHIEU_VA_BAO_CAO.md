@@ -8,14 +8,14 @@
 
 1. Điều phối viên mở **Quản lý đợt**, lấy nguồn xác nhận từ bước 07 và nhập số thực chuẩn bị. Server kiểm tra số đã trao ≤ số thực chuẩn bị ≤ số xác nhận. Nếu giảm số xác nhận, giữ đủ cho các lượt đã cấp còn hiệu lực và đã giao. [Bước 07 · Xác nhận nguồn](07_KE_HOACH_CAM_KET_NHA_HAO_TAM.md)
 2. Hiển thị riêng năm chỉ số. **Cam kết** và **Xác nhận** lấy từ nguồn đã đối chiếu. **Thực chuẩn bị** lấy số điều phối lưu. **Đã trao** đếm lượt giao hợp lệ trong `handovers`. **Chưa trao** bằng thực chuẩn bị trừ đã trao.
-3. Trong khi phát, ghi nhận giao bằng luồng phát suất. Làm mới báo cáo sau khi giao và đối chiếu số trên app với dữ liệu server. Mục **Người không đến nhận** chỉ có kết quả sau đối chiếu cuối đợt.
+3. Trong khi phát, ghi nhận giao theo bước 05. Làm mới báo cáo sau khi giao và đối chiếu số trên app với dữ liệu server. Mục **Người không đến nhận** chỉ có kết quả sau đối chiếu cuối đợt. [Bước 05 · Giao suất](05_KE_HOACH_GIAO_SUAT.md)
 
 ## 2. Đóng đợt và chốt báo cáo
 
 1. Sau `pickup_ends_at`, Điều phối viên mở **Đối chiếu cuối đợt**, kiểm tra số đã trao, hồ sơ còn vé chưa dùng, hồ sơ đang chờ và các ngoại lệ. Nhập ghi chú cách xử lý suất dư nếu còn suất chưa trao.
 2. Thêm migration cho trạng thái `NOT_COLLECTED` và `EXPIRED`, cùng bản chốt báo cáo theo đợt. Bản chốt lưu năm chỉ số, số hồ sơ không đến, ghi chú, người chốt, thời điểm chốt và trạng thái công bố. Đợt lịch sử đã có báo cáo giữ số đã trao từ snapshot cũ và giữ thông tin về nguồn của số liệu đó.
 3. Thêm RPC đóng đợt với quyền Điều phối viên phụ trách. Trong cùng giao dịch, khóa đợt, kiểm tra đã hết giờ phát, xác nhận số giao, chuyển hồ sơ đã cấp chưa nhận sang `NOT_COLLECTED`, chuyển hồ sơ đang chờ hoặc đang tiếp nhận còn treo sang `EXPIRED`, thu hồi vé chưa dùng và lưu bản chốt. Hồ sơ đã trao, đã hủy và bị từ chối giữ kết quả hiện tại.
-4. Sau khi RPC thành công, app hiện trạng thái **Đã đối chiếu**. Gửi lại thao tác đóng phải trả về bản chốt đã có. Đợt đã đóng dừng nhận hồ sơ, phân bổ, cấp lại và ghi lượt giao mới.
+4. Sau khi RPC thành công, app hiện trạng thái **Đã đối chiếu**. Gửi lại thao tác đóng phải trả về bản chốt đã có. Đợt đã đóng dừng nhận hồ sơ, nhận hoặc xét cam kết, phân bổ, cấp lại và ghi lượt giao mới. App người chăm sóc đọc hai trạng thái mới theo bước 04. [Bước 04 · Trạng thái và lịch sử](04_KE_HOACH_XEM_MA_NHAN.md#ca-kiểm-tra-trạng-thái-và-quyền-xem)
 
 ## 3. Công bố và chỉnh sau chốt
 
@@ -34,4 +34,6 @@
 | Chỉnh sau chốt | Thay đổi có lý do, người thực hiện và dấu vết trước/sau. Các lượt giao nguồn và bản chốt trước có thể đối chiếu. |
 | Hồi quy luồng phát và số nguồn | Cập nhật nguồn dưới giới hạn bị từ chối. Xác nhận giao mã cũ sau chốt giữ nguyên số đã trao. |
 
-**Hoàn thành khi** Android hiển thị báo cáo đúng cho từng vai trò và bộ kiểm thử SQL local đạt trên đợt thử. Ghi commit, thiết bị, mã đợt và số đối chiếu vào [QA](QA.md#nhánh-mvc-và-supabase) trước khi dùng kết quả để xét triển khai Supabase hosted.
+**Hoàn thành khi** Android hiển thị báo cáo đúng cho từng vai trò và bộ kiểm thử SQL local đạt trên đợt thử. Ghi commit, thiết bị, mã đợt và số đối chiếu vào [QA](QA.md#nhánh-mvc-và-supabase).
+
+Trước khi đẩy migration lên Supabase hosted, chốt các ca Android và SQL trên localhost cho các hạng mục sẽ triển khai. Nếu thay đổi cách tính nguồn hoặc trạng thái hồ sơ, chạy lại các ca phân bổ, xem mã và giao suất của bước 03–05 trên cùng bản migration sẽ đưa lên hosted. [Thứ tự nghiệm thu của bộ kế hoạch](01_KE_HOACH_DOT_HO_TRO.md#thứ-tự-thực-hiện-bộ-kế-hoạch)

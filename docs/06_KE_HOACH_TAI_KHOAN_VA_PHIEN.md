@@ -2,6 +2,8 @@
 
 **Mục tiêu.** Người dùng có thể đăng ký, xác nhận email, đăng nhập, đăng xuất, khôi phục mật khẩu và cập nhật thông tin liên hệ. Android giữ phiên khi mở lại app. Supabase xác định vai trò và phạm vi dữ liệu. [Đặc tả FR01](DAC_TA_YEU_CAU_BUA_COM_BEN_CON.md#fr01-tài-khoản-và-phiên-làm-việc)
 
+Thực hiện bước 06 trước lượt nghiệm thu chính thức của các bước 01–05 và vai trò Nhà hảo tâm ở bước 07. Dùng tài liệu đăng nhập và đăng xuất để triển khai chi tiết màn, phiên và các ca đổi tài khoản. [Kế hoạch đăng nhập và đăng xuất](KE_HOACH_DANG_NHAP_DANG_XUAT.md)
+
 **Hiện trạng.** Android đã có hộp thoại kết nối trong menu demo, đăng nhập email và mật khẩu, xác nhận và khôi phục qua OTP, đọc hồ sơ và vai trò từ Supabase. Phiên còn lưu trong bộ nhớ tiến trình. Thao tác đăng xuất hiện xóa phiên phía app. Màn Tài khoản chưa có chức năng sửa liên hệ. [Hướng dẫn Auth local](HUONG_DAN_TRIEN_KHAI_SUPABASE.md#2-kiểm-tra-auth-qua-mailpit) · [Mã Android hiện tại](../app/src/main/kotlin/vn/edu/buacombencon/MainActivity.kt)
 
 ## 1. Mở app và đăng nhập
@@ -39,4 +41,4 @@
 | Đăng xuất và đổi tài khoản | App về màn đăng nhập cả khi mất mạng. Khi server xác nhận đăng xuất, refresh token của phiên đó bị từ chối. Phiên ở thiết bị khác vẫn dùng được. Tài khoản mới chỉ thấy dữ liệu và bản nháp của mình. |
 | Chỉnh liên hệ | Lưu và đọc lại tên, số của chính tài khoản sau khi mở lại app. Quyền và hồ sơ của tài khoản khác giữ nguyên. |
 
-**Hoàn thành khi** các ca trên đạt qua Android Studio với Supabase local. Ghi commit, thiết bị và kết quả vào [QA](QA.md#nhánh-mvc-và-supabase). Sau đó dùng tài khoản đã nghiệm thu để chạy luồng đợt hỗ trợ và [07. Cam kết của nhà hảo tâm](07_KE_HOACH_CAM_KET_NHA_HAO_TAM.md).
+**Hoàn thành khi** các ca trên đạt qua Android Studio với Supabase local. Ghi commit, thiết bị và kết quả vào [QA](QA.md#nhánh-mvc-và-supabase). Bắt đầu lượt nghiệm thu tại [01. Chuẩn bị đợt](01_KE_HOACH_DOT_HO_TRO.md), sau đó dùng tài khoản Nhà hảo tâm cho [07. Cam kết của nhà hảo tâm](07_KE_HOACH_CAM_KET_NHA_HAO_TAM.md).

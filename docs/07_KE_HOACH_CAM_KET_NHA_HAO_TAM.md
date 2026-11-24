@@ -7,9 +7,9 @@
 ## 1. Chuẩn bị hợp đồng dữ liệu và cách tính
 
 1. Bổ sung `confirmed_quantity` mặc định 0, kết quả xử lý, người xử lý, thời điểm và ghi chú lý do vào cam kết qua migration mới. Giữ `quantity` là số đề nghị ban đầu. Thể hiện xác nhận một phần khi `0 < confirmed_quantity < quantity`. Bổ sung trạng thái từ chối và giữ lịch sử bị từ chối hoặc đã hủy.
-2. Tách nguồn tự chuẩn bị đã xác nhận khỏi số xác nhận từ từng cam kết. Tính `confirmed_supply` bằng **nguồn tự chuẩn bị + tổng số đã xác nhận từ cam kết**. Tính `pledged_supply` từ lượng đề nghị của các cam kết còn hiệu lực, gồm phần đề nghị ban đầu của cam kết được xác nhận một phần.
+2. Tách nguồn tự chuẩn bị đã xác nhận khỏi số xác nhận từ từng cam kết. Tính `confirmed_supply` bằng **nguồn tự chuẩn bị + tổng số đã xác nhận từ cam kết**. Tính `pledged_supply` từ lượng đề nghị của các cam kết còn hiệu lực, gồm phần đề nghị ban đầu của cam kết được xác nhận một phần. Số thực chuẩn bị là chỉ số riêng do điều phối ghi cho buổi phát.
 3. Kiểm tra dữ liệu cũ trước khi chuyển cách tính. Phân loại phần tổng đã xác nhận cũ theo nguồn có bằng chứng. Tách phần chưa xác định để điều phối đối chiếu trước khi đưa vào tổng phân bổ mới. Giữ số đã công bố của đợt lưu trữ làm mốc lịch sử.
-4. Giữ các số tổng hợp mà luồng phân bổ và phát suất đang dùng. Mọi cập nhật nguồn vẫn chạy qua RPC, dùng cùng khóa đợt và giữ số xác nhận tối thiểu bằng số đã cấp hoặc đã giao, đồng thời giữ số thực chuẩn bị trong giới hạn hiện có.
+4. Giữ các số tổng hợp mà luồng phân bổ và phát suất đang dùng. Khi áp dụng cách tính mới, cùng cập nhật hộp thoại nguồn hiện có để nó ghi nguồn tự chuẩn bị qua RPC và đọc `confirmed_supply` là tổng do server tính. Mọi cập nhật nguồn dùng cùng khóa đợt, giữ tổng xác nhận tối thiểu bằng số đang giữ chỗ cộng số đã giao và giữ số thực chuẩn bị trong giới hạn hiện có. [Bước 01 · Quản lý đợt](01_KE_HOACH_DOT_HO_TRO.md#kiểm-tra-riêng-luồng-tạo-và-quản-lý-đợt) · [Bước 03 · Phân bổ](03_KE_HOACH_XET_VA_PHAN_BO.md)
 
 ## 2. Nhà hảo tâm gửi và theo dõi cam kết
 
@@ -27,7 +27,7 @@
 
 ## 4. Nghiệm thu trên localhost
 
-Dùng một đợt thử có số nguồn ban đầu bằng 0. Đối chiếu dòng trong `commitments`, tổng trong `campaigns` và trạng thái hiển thị trên Android.
+Dùng đợt thử riêng với nguồn ban đầu bằng 0. Nếu tạo qua màn hiện hành yêu cầu tối thiểu 1 suất, tạo đợt với 1 suất rồi đặt nguồn tự chuẩn bị và số thực chuẩn bị về 0 trước khi có hồ sơ hoặc cam kết. Đối chiếu dòng trong `commitments`, tổng trong `campaigns` và trạng thái hiển thị trên Android.
 
 | Ca thử | Điều kiện đạt |
 | --- | --- |
