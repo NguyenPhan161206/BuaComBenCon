@@ -19,14 +19,14 @@ import android.widget.TextView
 import android.widget.Toast
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
-import vn.edu.buacombencon.data.demo.DemoAuthRepository
-import vn.edu.buacombencon.data.demo.DemoCampaignRepository
-import vn.edu.buacombencon.data.demo.DemoDonorRepository
-import vn.edu.buacombencon.data.demo.DemoRegistrationRepository
 import vn.edu.buacombencon.ui.account.AccountController
 import vn.edu.buacombencon.ui.caregiver.CaregiverController
 import vn.edu.buacombencon.ui.coordinator.CoordinatorController
 import vn.edu.buacombencon.ui.donor.DonorController
+import vn.edu.buacombencon.data.RepositoryProvider
+import vn.edu.buacombencon.data.remote.SupabaseConfig
+import vn.edu.buacombencon.data.remote.SupabaseRepository
+import vn.edu.buacombencon.ui.shell.MealActions
 import vn.edu.buacombencon.ui.shell.UiUtils
 import vn.edu.buacombencon.ui.volunteer.VolunteerController
 
@@ -61,11 +61,9 @@ open class MainActivity : Activity() {
     protected var connected = true
     protected var modernBack: OnBackInvokedCallback? = null
 
-    // Repositories
-    lateinit var campaignRepo: DemoCampaignRepository
-    lateinit var registrationRepo: DemoRegistrationRepository
-    lateinit var donorRepo: DemoDonorRepository
-    lateinit var authRepo: DemoAuthRepository
+    private lateinit var data: ScreenData
+    private lateinit var actions: MealActions
+    private var remoteLoaded = false
 
     // Controllers
     private lateinit var caregiverController: CaregiverController
@@ -77,9 +75,8 @@ open class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         store = DemoStore(this)
-        initRepositoriesAndControllers()
-
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null &&
+            savedInstanceState.getBoolean("supabaseSession") == (RepositoryProvider.remote != null)) {
             role = savedInstanceState.getInt("role")
             tab = savedInstanceState.getInt("tab")
             screen = savedInstanceState.getString("screen", "tab")
@@ -113,18 +110,26 @@ open class MainActivity : Activity() {
             insets
         }
         root.requestApplyInsets()
-        render()
+        initializeData()
+        if (actions.connected) refreshRemote() else render()
     }
 
-    private fun initRepositoriesAndControllers() {
-        campaignRepo = DemoCampaignRepository(store)
-        registrationRepo = DemoRegistrationRepository(store)
-        donorRepo = DemoDonorRepository(store)
-        authRepo = DemoAuthRepository(store)
+    private fun initializeData() {
+        if (!::actions.isInitialized) actions = MealActions(this, store, ::setSnapshot)
+        if (!::data.isInitialized) data = if (actions.connected) ScreenData() else store
+    }
 
+    private fun setSnapshot(snapshot: ScreenData) {
+        data = snapshot
+        remoteLoaded = true
+        initControllers()
+    }
+
+    private fun initControllers() {
         caregiverController = CaregiverController(
             activity = this,
-            store = store,
+            store = data,
+            actions = actions,
             content = content,
             scroll = scroll,
             drafts = drafts,
@@ -146,7 +151,8 @@ open class MainActivity : Activity() {
 
         coordinatorController = CoordinatorController(
             activity = this,
-            store = store,
+            store = data,
+            actions = actions,
             content = content,
             drafts = drafts,
             fields = fields,
@@ -167,25 +173,29 @@ open class MainActivity : Activity() {
                 }
             },
             onSwitchTab = { switchTab(it) },
+            draftKey = ::draftKey,
             onOpenTicket = { openTicket(it) },
             onRenderRequest = { render() }
         )
 
         volunteerController = VolunteerController(
             activity = this,
-            store = store,
+            store = data,
+            actions = actions,
             content = content,
             drafts = drafts,
             fields = fields,
             isConnected = { connected },
             setConnected = { connected = it },
             onChooseCampaign = { page, includeArchived -> chooseCampaign(page, includeArchived) },
+            draftKey = ::draftKey,
             onRenderRequest = { render() }
         )
 
         donorController = DonorController(
             activity = this,
-            store = store,
+            store = data,
+            actions = actions,
             content = content,
             drafts = drafts,
             fields = fields,
@@ -201,16 +211,21 @@ open class MainActivity : Activity() {
                 }
             },
             onSwitchTab = { switchTab(it) },
-            onChooseCampaign = { page, includeArchived -> chooseCampaign(page, includeArchived) }
+            onChooseCampaign = { page, includeArchived -> chooseCampaign(page, includeArchived) },
+            draftKey = ::draftKey
         )
 
         accountController = AccountController(
             activity = this,
-            store = store,
+            store = data,
+            actions = actions,
             content = content,
             roles = roles,
             onChooseRole = { chooseRole() },
+            onRefresh = ::refreshRemote,
+            onSignOut = ::signOut,
             onResetDemo = {
+                store.reset()
                 drafts.clear()
                 fields.clear()
                 spinners.clear()
@@ -229,7 +244,7 @@ open class MainActivity : Activity() {
 
     private fun capture() {
         if (fields.isEmpty() && spinners.isEmpty() && consent == null) return
-        val draft = Bundle()
+        val draft = drafts.getBundle(draftKey()) ?: Bundle()
         for ((key, field) in fields) draft.putString(key, field.text.toString())
         for ((key, spinner) in spinners) draft.putInt("spinner:$key", spinner.selectedItemPosition)
         consent?.let { draft.putBoolean("consent", it.isChecked) }
@@ -239,6 +254,7 @@ open class MainActivity : Activity() {
     override fun onSaveInstanceState(outState: Bundle) {
         capture()
         super.onSaveInstanceState(outState)
+        outState.putBoolean("supabaseSession", RepositoryProvider.remote != null)
         outState.putInt("role", role)
         outState.putInt("tab", tab)
         outState.putString("screen", screen)
@@ -310,6 +326,14 @@ open class MainActivity : Activity() {
     }
 
     private fun chooseRole() {
+        if (actions.connected) {
+            AlertDialog.Builder(this)
+                .setTitle(roles[role])
+                .setItems(arrayOf("Làm mới dữ liệu", "Đăng xuất")) { _, which ->
+                    if (which == 0) refreshRemote() else signOut()
+                }.show()
+            return
+        }
         AlertDialog.Builder(this)
             .setTitle("Chọn vai trò trình diễn")
             .setSingleChoiceItems(roles, role) { dialog, which ->
@@ -321,21 +345,182 @@ open class MainActivity : Activity() {
                 dialog.dismiss()
                 render()
             }
+            .setNeutralButton("Kết nối Supabase") { _, _ -> connectionDialog() }
             .setNegativeButton("Đóng", null)
             .show()
     }
 
+    private fun connectionDialog() {
+        val form = layoutInflater.inflate(R.layout.dialog_connection, null, false)
+        val url = form.findViewById<EditText>(R.id.connection_url)
+        val key = form.findViewById<EditText>(R.id.connection_key)
+        val email = form.findViewById<EditText>(R.id.connection_email)
+        val password = form.findViewById<EditText>(R.id.connection_password)
+        val signUp = form.findViewById<View>(R.id.connection_sign_up)
+        url.setText(SupabaseConfig.DEFAULT_URL)
+        val dialog = AlertDialog.Builder(this).setTitle("Đăng nhập Supabase").setView(form)
+            .setPositiveButton("Đăng nhập", null)
+            .setNeutralButton("Quên mật khẩu", null)
+            .setNegativeButton("Hủy", null).create()
+        dialog.setOnShowListener {
+            fun connection(): SupabaseRepository? = try {
+                SupabaseRepository(url.text.toString(), key.text.toString().trim())
+            } catch (error: Exception) {
+                url.error = error.message
+                null
+            }
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val address = email.text.toString().trim()
+                val secret = password.text.toString()
+                val repository = connection() ?: return@setOnClickListener
+                if (address.isBlank() || secret.isBlank()) {
+                    email.error = "Nhập email và mật khẩu."
+                    return@setOnClickListener
+                }
+                actions.run({
+                    repository.signIn(address, secret)
+                    repository.snapshot()
+                }) { snapshot ->
+                    dialog.dismiss()
+                    RepositoryProvider.remote = repository
+                    clearNavigation()
+                    role = repository.role.index
+                    setSnapshot(snapshot)
+                    render()
+                }
+            }
+            signUp.setOnClickListener {
+                val address = email.text.toString().trim()
+                val secret = password.text.toString()
+                val repository = connection() ?: return@setOnClickListener
+                if (address.isBlank() || secret.length < 8) {
+                    password.error = "Nhập email và mật khẩu ít nhất 8 ký tự."
+                    return@setOnClickListener
+                }
+                actions.run({ repository.signUp(address, secret) }) {
+                    verifyEmailDialog(repository, address, null)
+                }
+            }
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                val address = email.text.toString().trim()
+                val repository = connection() ?: return@setOnClickListener
+                if (address.isBlank()) {
+                    email.error = "Nhập email cần khôi phục."
+                    return@setOnClickListener
+                }
+                actions.run({ repository.requestPasswordReset(address) }) {
+                    verifyEmailDialog(repository, address, password)
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun verifyEmailDialog(repository: SupabaseRepository, email: String, loginPassword: EditText?) {
+        val reset = loginPassword != null
+        val form = layoutInflater.inflate(R.layout.dialog_password_reset, null, false)
+        val code = form.findViewById<EditText>(R.id.recovery_code)
+        val password = form.findViewById<EditText>(R.id.new_password)
+        password.visibility = if (reset) View.VISIBLE else View.GONE
+        val dialog = AlertDialog.Builder(this).setTitle(if (reset) "Đặt lại mật khẩu" else "Xác nhận email")
+            .setMessage("Mở email đã nhận và nhập mã xác nhận.").setView(form)
+            .setPositiveButton(if (reset) "Lưu mật khẩu" else "Xác nhận", null)
+            .setNegativeButton("Quay lại", null).create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val token = code.text.toString().trim()
+                val secret = password.text.toString()
+                if (!token.matches(Regex("[0-9]{6,10}"))) {
+                    code.error = "Nhập mã trong email."
+                    return@setOnClickListener
+                }
+                if (reset && secret.length < 8) {
+                    password.error = "Nhập mật khẩu mới từ 8 ký tự."
+                    return@setOnClickListener
+                }
+                actions.run({
+                    if (reset) repository.resetPassword(email, token, secret)
+                    else repository.confirmSignup(email, token)
+                }) {
+                    dialog.dismiss()
+                    loginPassword?.setText("")
+                    UiUtils.toast(this, if (reset) "Đã đổi mật khẩu. Hãy đăng nhập lại."
+                        else "Đã xác nhận email. Bạn có thể đăng nhập.")
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun clearNavigation() {
+        fields.clear()
+        spinners.clear()
+        drafts.clear()
+        consent = null
+        screen = "tab"
+        tab = 0
+        filter = 0
+        listFilter = "Tất cả"
+        back.clear()
+        campaignId = "c1"
+        registrationId = "R0013"
+    }
+
+    private fun signOut() {
+        RepositoryProvider.remote = null
+        clearNavigation()
+        role = 0
+        data = store
+        remoteLoaded = false
+        initControllers()
+        render()
+    }
+
+    private fun refreshRemote() {
+        val remote = RepositoryProvider.remote ?: return
+        capture()
+        actions.run({ remote.snapshot() }, onError = { error ->
+            render()
+            actions.showError(error)
+        }) { snapshot ->
+            role = remote.role.index
+            setSnapshot(snapshot)
+            render()
+        }
+    }
+
+    override fun onDestroy() {
+        if (::actions.isInitialized) actions.close()
+        super.onDestroy()
+    }
+
     /** Called by RenderPreview reflection and runtime. */
     open fun render() {
-        if (!::caregiverController.isInitialized) {
-            initRepositoriesAndControllers()
-        }
+        initializeData()
+        if (!::caregiverController.isInitialized) initControllers()
         fields.clear()
         spinners.clear()
         consent = null
         content.removeAllViews()
         UiUtils.text(findViewById(R.id.app_root), R.id.role_switch, "${shortRoles[role]} ⌄")
         drawNav()
+        if (actions.connected && !remoteLoaded) {
+            UiUtils.empty(layoutInflater, content, "Chưa tải được dữ liệu", "Chọn Làm mới ở menu tài khoản.")
+            return
+        }
+        if (actions.connected && data.campaigns.isEmpty() && screen != "create" && tab != 3) {
+            UiUtils.empty(layoutInflater, content, "Chưa có đợt hỗ trợ", "Các đợt trong phạm vi của bạn sẽ xuất hiện ở đây.")
+            if (role == 1) coordinatorController.renderCampaigns()
+            return
+        }
+        if (actions.connected && data.campaigns.none { it.id == campaignId } && data.campaigns.isNotEmpty()) {
+            if (screen in setOf("detail", "form", "assisted", "manage", "pledge")) {
+                screen = "tab"
+                back.clear()
+                UiUtils.toast(this, "Đợt này không còn trong phạm vi truy cập.")
+            }
+            campaignId = data.campaigns.first().id
+        }
         if (screen != "tab") UiUtils.click(UiUtils.inflate(layoutInflater, R.layout.item_back, content), R.id.back_button, ::navigateBack)
         when (screen) {
             "detail" -> detail()
@@ -394,17 +579,17 @@ open class MainActivity : Activity() {
             1 -> when (tab) {
                 0 -> coordinatorController.renderDashboard()
                 1 -> coordinatorController.renderCampaigns()
-                else -> donorController.renderReports(campaignId) { editSupply(it) }
+                else -> donorController.renderReports { editSupply(it) }
             }
             2 -> when (tab) {
-                0 -> volunteerController.renderDistribution(campaignId)
-                1 -> volunteerController.renderHandedOver(campaignId)
+                0 -> volunteerController.renderDistribution()
+                1 -> volunteerController.renderHandedOver()
                 else -> volunteerController.renderHelp()
             }
             else -> when (tab) {
                 0 -> donorController.renderDonorHome()
                 1 -> donorController.renderCommitments()
-                else -> donorController.renderReports(campaignId, null)
+                else -> donorController.renderReports(null)
             }
         }
     }
@@ -429,27 +614,27 @@ open class MainActivity : Activity() {
     }
 
     private fun detail() {
-        val campaign = store.campaign(campaignId)
+        val campaign = data.campaign(campaignId)
         caregiverController.renderDetail(campaignId)
         if (campaign.archived) {
             findViewById<View>(R.id.detail_archived)?.let { UiUtils.visible(it, R.id.detail_archived, true) }
             val container = findViewById<LinearLayout>(R.id.detail_report)
             if (container != null) donorController.renderReportCard(container, campaign)
         } else if (role == 3) {
-            val page = findViewById<View>(R.id.screen_detail_root) ?: content
+            val page = content
             UiUtils.visible(page, R.id.detail_pledge_action, true)
             UiUtils.click(page, R.id.detail_pledge_action) { go("pledge") }
         }
     }
 
     private fun success() {
-        val registration = store.registration(registrationId)
+        val registration = data.registration(registrationId)
         if (registration == null) {
             val msg = layoutInflater.inflate(R.layout.item_message, content, true)
             UiUtils.text(msg, R.id.message_text, "Không tìm thấy đăng ký.")
             return
         }
-        val campaign = store.campaign(registration.campaignId)
+        val campaign = data.campaign(registration.campaignId)
         val page = layoutInflater.inflate(R.layout.screen_success, content, true)
         UiUtils.text(page, R.id.success_campaign, campaign.title)
         UiUtils.text(page, R.id.success_date, "${campaign.date()} · 1 suất ăn")
@@ -492,8 +677,8 @@ open class MainActivity : Activity() {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val confirmedCount = confirmed.text.toString().trim().toIntOrNull() ?: -1
                 val preparedCount = prepared.text.toString().trim().toIntOrNull() ?: -1
-                val receivedCount = store.received(campaign)
-                val minimum = maxOf(store.assigned(campaign.id), receivedCount)
+                val receivedCount = data.received(campaign)
+                val minimum = maxOf(data.assigned(campaign.id), receivedCount)
                 if (confirmedCount !in minimum..1000) {
                     confirmed.error = "Từ $minimum đến 1.000 suất"
                     return@setOnClickListener
@@ -502,19 +687,24 @@ open class MainActivity : Activity() {
                     prepared.error = "Từ $receivedCount đến $confirmedCount suất"
                     return@setOnClickListener
                 }
-                campaign.confirmed = confirmedCount
-                campaign.prepared = preparedCount
-                campaign.note = note.text.toString().trim()
-                store.save()
-                dialog.dismiss()
-                render()
+                actions.updateSupply(campaign, confirmedCount, preparedCount, note.text.toString().trim()) {
+                    dialog.dismiss()
+                    render()
+                }
             }
         }
         dialog.show()
     }
 
-    private fun chooseCampaign(page: View, includeArchived: Boolean) {
-        val options = store.campaigns.filter { includeArchived || !it.archived }
+    private fun chooseCampaign(page: View, includeArchived: Boolean): String? {
+        val options = data.campaigns.filter {
+            if (actions.connected && role == 3 && includeArchived) it.archived
+            else includeArchived || !it.archived
+        }
+        if (options.isEmpty()) {
+            UiUtils.text(page, R.id.campaign_picker, "Chưa có đợt phù hợp")
+            return null
+        }
         val selected = options.firstOrNull { it.id == campaignId } ?: options.first()
         campaignId = selected.id
         UiUtils.text(page, R.id.campaign_picker, "${selected.title}  ⌄")
@@ -529,5 +719,6 @@ open class MainActivity : Activity() {
                 }
                 .show()
         }
+        return selected.id
     }
 }

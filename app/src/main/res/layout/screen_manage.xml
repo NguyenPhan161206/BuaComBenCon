@@ -185,6 +185,16 @@
         android:layout_width="1px"
         android:layout_height="16dp"
         android:importantForAccessibility="no" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiSecondaryButton"
+        android:id="@+id/allocate_campaign_action"
+        android:text="@string/allocate_campaign_action"
+        android:visibility="gone" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiSecondaryButton"
+        android:id="@+id/reallocate_campaign_action"
+        android:text="@string/reallocate_campaign_action"
+        android:visibility="gone" />
     <LinearLayout
         android:id="@+id/managed_registration_list"
         android:layout_width="match_parent"

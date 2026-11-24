@@ -1,7 +1,9 @@
 .gradle/
 .gradle-local/
+.kotlin/
 .idea/
 local.properties
+supabase/.temp/
 **/build/
 *.iml
 *.keystore

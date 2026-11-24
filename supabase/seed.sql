@@ -1,153 +1,86 @@
--- Seed Data for BuaComBenCon MVP Scenario
--- Seeds campaigns, users for all 4 roles, registrations, tickets, and past reconciliation data.
-
--- 1. Demo Auth Users & Profiles
+-- Local fixtures only. UTC timestamps use the server clock at reset.
 DO $$
 DECLARE
-    v_user_caregiver UUID := '11111111-1111-1111-1111-111111111111';
-    v_user_coordinator UUID := '22222222-2222-2222-2222-222222222222';
-    v_user_volunteer UUID := '33333333-3333-3333-3333-333333333333';
-    v_user_donor UUID := '44444444-4444-4444-4444-444444444444';
-    v_now TIMESTAMPTZ := now();
-    v_idx INTEGER;
-    v_reg_id TEXT;
-    v_code TEXT;
-    v_status TEXT;
-    v_is_mine BOOLEAN;
-    v_is_assisted BOOLEAN;
+    caregiver CONSTANT UUID := '11111111-1111-1111-1111-111111111111';
+    coordinator CONSTANT UUID := '22222222-2222-2222-2222-222222222222';
+    volunteer CONSTANT UUID := '33333333-3333-3333-3333-333333333333';
+    donor CONSTANT UUID := '44444444-4444-4444-4444-444444444444';
+    instant CONSTANT TIMESTAMPTZ := now();
+    recipient UUID;
+    registration_id TEXT;
+    code TEXT;
+    name TEXT;
+    phone TEXT;
 BEGIN
-    -- Insert auth.users
-    INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, raw_user_meta_data)
-    VALUES
-        (v_user_caregiver, 'giadinh@buacombencon.vn', crypt('MatKhau@123', gen_salt('bf')), v_now, '{"full_name": "Người chăm sóc (mẫu)"}'),
-        (v_user_coordinator, 'dieuphoi@buacombencon.vn', crypt('MatKhau@123', gen_salt('bf')), v_now, '{"full_name": "Điều phối viên (mẫu)"}'),
-        (v_user_volunteer, 'tinhnguyen@buacombencon.vn', crypt('MatKhau@123', gen_salt('bf')), v_now, '{"full_name": "Tình nguyện viên (mẫu)"}'),
-        (v_user_donor, 'nhahaotam@buacombencon.vn', crypt('MatKhau@123', gen_salt('bf')), v_now, '{"full_name": "Nhà hảo tâm (mẫu)"}')
-    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password,
+        email_confirmed_at, confirmation_token, recovery_token, email_change_token_new,
+        email_change, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+    SELECT '00000000-0000-0000-0000-000000000000', id, 'authenticated', 'authenticated', email,
+        extensions.crypt('MatKhau@123', extensions.gen_salt('bf')), instant, '', '', '', '',
+        '{"provider":"email","providers":["email"]}', '{}', instant, instant
+    FROM (VALUES (caregiver, 'giadinh@buacombencon.vn'), (coordinator, 'dieuphoi@buacombencon.vn'),
+        (volunteer, 'tinhnguyen@buacombencon.vn'), (donor, 'nhahaotam@buacombencon.vn')) AS demo(id,email);
 
-    -- Insert public.profiles
-    INSERT INTO public.profiles (id, full_name, phone, role)
-    VALUES
-        (v_user_caregiver, 'Người chăm sóc (mẫu)', '0900000013', 'caregiver'),
-        (v_user_coordinator, 'Điều phối viên (mẫu)', '0900000001', 'coordinator'),
-        (v_user_volunteer, 'Tình nguyện viên (mẫu)', '0900000002', 'volunteer'),
-        (v_user_donor, 'Nhà hảo tâm (mẫu)', '0900000003', 'donor')
+    INSERT INTO auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+    SELECT id::text, id, jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true),
+        'email', instant, instant, instant
+    FROM auth.users WHERE id IN (caregiver, coordinator, volunteer, donor);
+
+    INSERT INTO public.profiles (id, full_name, phone, role) VALUES
+        (caregiver, 'Người chăm sóc (mẫu)', '0900000013', 'caregiver'),
+        (coordinator, 'Điều phối viên (mẫu)', '0900000001', 'coordinator'),
+        (volunteer, 'Tình nguyện viên (mẫu)', '0900000002', 'volunteer'),
+        (donor, 'Nhà hảo tâm (mẫu)', '0900000003', 'donor')
     ON CONFLICT (id) DO UPDATE SET full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, role = EXCLUDED.role;
 
-    -- 2. Campaigns
-    -- Today's campaign c1 (30 confirmed supply)
     INSERT INTO public.campaigns (
-        id, title, meal, event_date, pickup_time, location,
-        confirmed_supply, pledged_supply, prepared_supply, deadline, rules, note, is_registration_open, is_archived
-    ) VALUES (
-        'c1', 'Bữa trưa ấm lòng', 'Bữa trưa', CURRENT_DATE, '11:00 – 12:00',
-        'Điểm phát An Tâm · khu sinh hoạt chung (mẫu)',
-        30, 40, 30, '10:00 hôm nay',
-        'Dành cho người chăm sóc bệnh nhi ung thư được nhóm hỗ trợ xác nhận. Mỗi người chăm sóc đăng ký 1 suất mỗi đợt. Sắp xếp theo thứ tự đăng ký hợp lệ; trường hợp ngoại lệ do điều phối viên xem xét.',
-        'Đã sẵn sàng phát suất.', true, false
-    ) ON CONFLICT (id) DO NOTHING;
+        id, coordinator_id, title, meal, event_date, pickup_time, location,
+        confirmed_supply, pledged_supply, prepared_supply, deadline, rules,
+        registration_closes_at, completion_closes_at, allocation_at, cancellation_closes_at,
+        reallocation_closes_at, pickup_starts_at, pickup_ends_at,
+        allocated_at, is_archived, archived_received, note
+    ) VALUES
+        ('c1', coordinator, 'Bữa trưa ấm lòng', 'Bữa trưa', CURRENT_DATE, 'Khung phát dữ liệu mẫu', 'Điểm An Tâm (mẫu)',
+        30, 40, 30, 'Đợt đang phát', 'Một suất mỗi người nhận đã được xét đạt.',
+        instant - interval '5 hours', instant - interval '4 hours', instant - interval '3 hours',
+        instant - interval '2 hours', instant - interval '2 hours', instant - interval '1 hour', instant + interval '1 day',
+        instant - interval '3 hours', false, 0, ''),
+        ('c2', coordinator, 'Thêm một bữa cơm lành', 'Bữa trưa', CURRENT_DATE, 'Sau giờ phân bổ', 'Điểm An Tâm (mẫu)',
+        30, 10, 30, '5 phút sau khi nạp dữ liệu mẫu', 'Một suất mỗi người nhận đã được xét đạt.',
+        instant + interval '5 minutes', instant + interval '6 minutes', instant + interval '7 minutes',
+        instant + interval '12 minutes', instant + interval '15 minutes', instant + interval '16 minutes', instant + interval '1 day',
+        NULL, false, 0, ''),
+        ('c0', coordinator, 'Bữa cơm ngày hôm qua', 'Bữa trưa', CURRENT_DATE - 1, '11:00 – 12:00', 'Điểm An Tâm (mẫu)',
+        30, 40, 30, 'Đã kết thúc', 'Một suất mỗi người nhận đã được xét đạt.',
+        instant - interval '26 hours', instant - interval '25 hours', instant - interval '24 hours',
+        instant - interval '23 hours', instant - interval '23 hours', instant - interval '22 hours', instant - interval '21 hours',
+        instant - interval '24 hours', true, 28, 'Hai suất chưa trao được chuyển đến điểm hỗ trợ theo quy trình mẫu.');
 
-    -- Tomorrow's campaign c2 (40 confirmed supply)
-    INSERT INTO public.campaigns (
-        id, title, meal, event_date, pickup_time, location,
-        confirmed_supply, pledged_supply, prepared_supply, deadline, rules, note, is_registration_open, is_archived
-    ) VALUES (
-        'c2', 'Thêm một bữa cơm lành', 'Bữa trưa', CURRENT_DATE + interval '1 day', '11:00 – 12:00',
-        'Điểm phát An Tâm · khu sinh hoạt chung (mẫu)',
-        40, 50, 0, '18:00 ngày trước buổi phát',
-        'Dành cho người chăm sóc bệnh nhi ung thư được nhóm hỗ trợ xác nhận. Mỗi người chăm sóc đăng ký 1 suất mỗi đợt.',
-        'Đang tiếp nhận đăng ký.', true, false
-    ) ON CONFLICT (id) DO NOTHING;
+    INSERT INTO public.campaign_volunteers (campaign_id, volunteer_id) VALUES ('c1', volunteer), ('c2', volunteer);
 
-    -- Day after tomorrow campaign c3 (25 confirmed supply)
-    INSERT INTO public.campaigns (
-        id, title, meal, event_date, pickup_time, location,
-        confirmed_supply, pledged_supply, prepared_supply, deadline, rules, note, is_registration_open, is_archived
-    ) VALUES (
-        'c3', 'Bữa chiều sẻ chia', 'Bữa chiều', CURRENT_DATE + interval '2 days', '16:30 – 17:30',
-        'Điểm phát An Tâm · khu sinh hoạt chung (mẫu)',
-        25, 35, 0, '18:00 ngày trước buổi phát',
-        'Dành cho người chăm sóc bệnh nhi ung thư.',
-        'Đang tiếp nhận đăng ký.', true, false
-    ) ON CONFLICT (id) DO NOTHING;
+    FOR idx IN 1..35 LOOP
+        registration_id := 'R' || lpad(idx::text, 4, '0');
+        code := 'BC' || lpad(idx::text, 4, '0');
+        name := CASE WHEN idx = 13 THEN 'Người chăm sóc (mẫu)' ELSE 'Người chăm sóc ' || idx END;
+        phone := '090' || lpad(idx::text, 7, '0');
+        INSERT INTO public.recipients (name_key, phone) VALUES (lower(name), phone) RETURNING id INTO recipient;
+        INSERT INTO public.registrations (id, campaign_id, recipient_id, user_id, recipient_name, phone, consent_at,
+            is_assisted, assisted_by, status, completed_info_at, is_approved, reviewed_at, reviewed_by)
+        VALUES (registration_id, 'c1', recipient, CASE WHEN idx = 13 THEN caregiver END, name, phone,
+            instant - interval '5 hours', idx % 4 = 0, CASE WHEN idx % 4 = 0 THEN coordinator END,
+            CASE WHEN idx <= 12 THEN 'RECEIVED' WHEN idx <= 30 THEN 'ALLOCATED' ELSE 'WAITING' END,
+            instant - interval '5 hours' + idx * interval '1 second', true, instant - interval '4 hours', coordinator);
 
-    -- Historical campaign c0 (archived, 28 received, 2 unhanded meals)
-    INSERT INTO public.campaigns (
-        id, title, meal, event_date, pickup_time, location,
-        confirmed_supply, pledged_supply, prepared_supply, deadline, rules, note, is_registration_open, is_archived, archived_received
-    ) VALUES (
-        'c0', 'Bữa cơm ngày hôm qua', 'Bữa trưa', CURRENT_DATE - interval '1 day', '11:00 – 12:00',
-        'Điểm phát An Tâm · khu sinh hoạt chung (mẫu)',
-        30, 40, 30, '10:00 hôm qua',
-        'Dành cho người chăm sóc bệnh nhi ung thư.',
-        '2 suất chưa trao được nhóm chuyển tới điểm hỗ trợ theo quy tắc của đợt (minh họa).',
-        false, true, 28
-    ) ON CONFLICT (id) DO NOTHING;
-
-    -- 3. Registrations (Seeding 35 applicants for c1: 1..12 RECEIVED, 13..30 ALLOCATED, 31..35 WAITING)
-    FOR v_idx IN 1..35 LOOP
-        v_reg_id := 'R' || lpad(v_idx::text, 4, '0');
-        v_code := 'BC' || lpad(v_idx::text, 4, '0');
-        v_is_mine := (v_idx = 13);
-        v_is_assisted := (v_idx % 4 = 0);
-
-        IF v_idx <= 12 THEN
-            v_status := 'RECEIVED';
-        ELSIF v_idx <= 30 THEN
-            v_status := 'ALLOCATED';
-        ELSE
-            v_status := 'WAITING';
+        IF idx <= 30 THEN
+            INSERT INTO public.tickets (registration_id, ticket_code, qr_payload, is_used, valid_from, valid_until)
+            VALUES (registration_id, code, code, idx <= 12, instant - interval '1 hour', instant + interval '1 day');
         END IF;
-
-        INSERT INTO public.registrations (
-            id, campaign_id, user_id, recipient_name, phone,
-            is_assisted, assisted_by, status, queue_number, completed_info_at, reviewed_at, note
-        ) VALUES (
-            v_reg_id, 'c1',
-            CASE WHEN v_is_mine THEN v_user_caregiver ELSE NULL END,
-            CASE WHEN v_is_mine THEN 'Người chăm sóc (mẫu)' ELSE 'Người chăm sóc ' || lpad(v_idx::text, 2, '0') END,
-            '090' || lpad(v_idx::text, 7, '0'),
-            v_is_assisted,
-            CASE WHEN v_is_assisted THEN v_user_coordinator ELSE NULL END,
-            v_status, v_idx,
-            v_now - ((40 - v_idx) * interval '1 minute'),
-            v_now - interval '30 minutes',
-            ''
-        ) ON CONFLICT (id) DO NOTHING;
-
-        -- Create tickets for allocated & received
-        IF v_status IN ('ALLOCATED', 'RECEIVED') THEN
-            INSERT INTO public.tickets (
-                registration_id, ticket_code, qr_payload, is_used, is_revoked, valid_from, valid_until
-            ) VALUES (
-                v_reg_id, v_code, v_code, (v_status = 'RECEIVED'), false, v_now - interval '1 hour', v_now + interval '1 day'
-            ) ON CONFLICT (registration_id) DO NOTHING;
-        END IF;
-
-        -- Create handover record for RECEIVED
-        IF v_status = 'RECEIVED' THEN
-            INSERT INTO public.handovers (
-                registration_id, campaign_id, volunteer_id, handover_time, verification_method
-            ) VALUES (
-                v_reg_id, 'c1', v_user_volunteer, v_now - ((15 - v_idx) * interval '2 minutes'), 'QR_SCAN'
-            ) ON CONFLICT (registration_id) DO NOTHING;
+        IF idx <= 12 THEN
+            INSERT INTO public.handovers (registration_id, campaign_id, volunteer_id, handover_time)
+            VALUES (registration_id, 'c1', volunteer, instant - interval '30 minutes');
         END IF;
     END LOOP;
 
-    -- Add historical registration for user in c0
-    INSERT INTO public.registrations (
-        id, campaign_id, user_id, recipient_name, phone,
-        is_assisted, status, completed_info_at
-    ) VALUES (
-        'R0036', 'c0', v_user_caregiver, 'Người chăm sóc (mẫu)', '0900000013',
-        false, 'RECEIVED', v_now - interval '1 day'
-    ) ON CONFLICT (id) DO NOTHING;
-
-    -- 4. Commitments
-    INSERT INTO public.commitments (
-        campaign_id, donor_id, donor_name, donor_phone, quantity, cadence, consent, status
-    ) VALUES (
-        'c2', v_user_donor, 'Nhà hảo tâm (mẫu)', '0900000003', 10, 'Theo đợt', true, 'PENDING'
-    );
-
+    INSERT INTO public.commitments (campaign_id, donor_id, donor_name, donor_phone, quantity)
+    VALUES ('c2', donor, 'Nhà hảo tâm (mẫu)', '0900000003', 10);
 END $$;

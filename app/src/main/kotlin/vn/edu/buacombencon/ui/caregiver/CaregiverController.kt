@@ -16,12 +16,15 @@ import vn.edu.buacombencon.R
 import vn.edu.buacombencon.domain.model.Campaign
 import vn.edu.buacombencon.domain.model.Registration
 import vn.edu.buacombencon.domain.model.RegistrationStatus
+import vn.edu.buacombencon.ui.shell.MealActions
 import vn.edu.buacombencon.ui.shell.UiUtils
+import vn.edu.buacombencon.ScreenData
 import java.util.Locale
 
-class CaregiverController(
+internal class CaregiverController(
     private val activity: Activity,
-    private val store: DemoStore,
+    private val store: ScreenData,
+    private val actions: MealActions,
     private val content: LinearLayout,
     private val scroll: ScrollView,
     private val drafts: Bundle,
@@ -152,16 +155,13 @@ class CaregiverController(
                 UiUtils.info(activity, "Cần sự đồng ý", "Vui lòng đọc và đồng ý phần cung cấp thông tin trước khi gửi.")
                 return@click
             }
-            val reg = try {
-                store.register(campaign.id, name.text.toString().trim(), phone.text.toString().trim(), note.text.toString().trim(), true, false)
-            } catch (error: IllegalStateException) {
-                UiUtils.info(activity, "Chưa thể đăng ký", error.message.orEmpty())
-                return@click
+            actions.register(campaign.id, name.text.toString().trim(), phone.text.toString().trim(),
+                note.text.toString().trim(), assisted = false) { id ->
+                drafts.remove(draftKey(campaignId))
+                fields.clear()
+                setConsent(null)
+                onRegistered(id)
             }
-            drafts.remove(draftKey(campaignId))
-            fields.clear()
-            setConsent(null)
-            onRegistered(reg.id)
         }
     }
 
@@ -215,10 +215,14 @@ class CaregiverController(
         val ticketContent = page.findViewById<LinearLayout>(R.id.ticket_content)
         when (registration.status) {
             DemoStore.ALLOCATED -> {
+                if (registration.code.isEmpty()) {
+                    UiUtils.empty(activity.layoutInflater, ticketContent, "Mã chưa tải được", "Làm mới dữ liệu để lấy mã nhận.")
+                    return
+                }
                 activity.layoutInflater.inflate(R.layout.ticket_allocated, ticketContent, true)
-                page.findViewById<QrView>(R.id.ticket_qr).setPayload(registration.code)
-                UiUtils.text(page, R.id.ticket_code, registration.code)
-                UiUtils.click(page, R.id.copy_code_action) {
+                ticketContent.findViewById<QrView>(R.id.ticket_qr).setPayload(registration.code)
+                UiUtils.text(ticketContent, R.id.ticket_code, registration.code)
+                UiUtils.click(ticketContent, R.id.copy_code_action) {
                     activity.getSystemService(ClipboardManager::class.java)
                         ?.setPrimaryClip(ClipData.newPlainText("Mã nhận suất", registration.code))
                     UiUtils.toast(activity, "Đã sao chép mã nhận.")
@@ -228,7 +232,12 @@ class CaregiverController(
                 activity.layoutInflater.inflate(R.layout.ticket_pending, ticketContent, true)
                 UiUtils.text(
                     page, R.id.pending_title,
-                    if (registration.status == DemoStore.WAITING) "Bạn đang ở danh sách chờ" else "Đăng ký đang được kiểm tra"
+                    when {
+                        registration.status == DemoStore.WAITING -> "Bạn đang ở danh sách chờ"
+                        registration.reviewed -> "Hồ sơ đã xét đạt, đang chờ phân bổ"
+                        !registration.complete -> "Hồ sơ còn cần bổ sung"
+                        else -> "Đăng ký đang được kiểm tra"
+                    }
                 )
             }
             else -> {
@@ -236,13 +245,25 @@ class CaregiverController(
                 UiUtils.text(
                     page, R.id.inactive_text,
                     if (registration.status == DemoStore.RECEIVED) "Suất ăn đã được ghi nhận giao. Mã không còn hiệu lực."
+                    else if (registration.status == DemoStore.REJECTED) "Hồ sơ không đủ điều kiện nhận suất."
                     else "Đăng ký đã hủy. Mã không còn hiệu lực."
                 )
             }
         }
         UiUtils.text(page, R.id.ticket_time, "${campaign.date()} · ${campaign.time}")
         UiUtils.text(page, R.id.ticket_location, campaign.location)
-        if (registration.status != DemoStore.RECEIVED && registration.status != DemoStore.CANCELLED) {
+        if (actions.connected && registration.status == DemoStore.PENDING && !registration.complete && registration.mine) {
+            UiUtils.visible(page, R.id.complete_registration_action, true)
+            UiUtils.click(page, R.id.complete_registration_action) {
+                AlertDialog.Builder(activity).setTitle("Xác nhận đã bổ sung đủ thông tin?")
+                    .setNegativeButton("Quay lại", null)
+                    .setPositiveButton("Xác nhận") { _, _ ->
+                        actions.action("complete_registration", "p_registration_id" to registration.id,
+                            "p_note" to registration.note) { onRenderRequest() }
+                    }.show()
+            }
+        }
+        if (registration.status in setOf(DemoStore.PENDING, DemoStore.WAITING, DemoStore.ALLOCATED)) {
             UiUtils.visible(page, R.id.cancel_registration_action, true)
             UiUtils.click(page, R.id.cancel_registration_action) {
                 AlertDialog.Builder(activity)
@@ -250,9 +271,13 @@ class CaregiverController(
                     .setMessage("Đơn vị tổ chức có thể sắp xếp suất cho người đang chờ. Mã nhận của bạn sẽ hết hiệu lực.")
                     .setNegativeButton("Giữ đăng ký", null)
                     .setPositiveButton("Xác nhận hủy") { _, _ ->
-                        registration.status = DemoStore.CANCELLED
-                        store.save()
-                        onRenderRequest()
+                        if (actions.connected) {
+                            actions.action("cancel_registration", "p_registration_id" to registration.id) { onRenderRequest() }
+                        } else {
+                            registration.status = DemoStore.CANCELLED
+                            (store as DemoStore).save()
+                            onRenderRequest()
+                        }
                     }
                     .show()
             }

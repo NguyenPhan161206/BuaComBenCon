@@ -6,21 +6,25 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /** Local UI demonstration data. */
-class DemoStore(context: Context) {
+class DemoStore(context: Context) : ScreenData() {
     companion object {
         const val PENDING = "PENDING"
         const val ALLOCATED = "ALLOCATED"
         const val WAITING = "WAITING"
         const val RECEIVED = "RECEIVED"
         const val CANCELLED = "CANCELLED"
+        const val REJECTED = "REJECTED"
 
         fun statusLabel(status: String): String = when (status) {
             ALLOCATED -> "Được nhận"
             WAITING -> "Danh sách chờ"
             RECEIVED -> "Đã nhận"
             CANCELLED -> "Đã hủy"
+            REJECTED -> "Không đủ điều kiện"
             else -> "Đã tiếp nhận"
         }
     }
@@ -42,8 +46,11 @@ class DemoStore(context: Context) {
         var note = "Chưa có ghi chú xử lý suất còn lại."
         var archived = false
         var archivedReceived = 0
+        var fixedDate: LocalDate? = null
+        var allocated = false
 
         fun date(): String {
+            fixedDate?.let { return it.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ROOT)) }
             val calendar = Calendar.getInstance()
             calendar.add(Calendar.DAY_OF_YEAR, day)
             return SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("vi-VN")).format(calendar.time)
@@ -65,16 +72,13 @@ class DemoStore(context: Context) {
         val assisted: Boolean,
         var status: String,
     ) {
-        val code = "BC" + id.substring(1)
+        var code = "BC" + id.substring(1)
+        var reviewed = false
+        var complete = true
         var note = ""
     }
 
-    val campaigns = mutableListOf<Campaign>()
-    val registrations = mutableListOf<Registration>()
     private val prefs = context.getSharedPreferences("ui_demo_v1", Context.MODE_PRIVATE)
-    var donorPledged = 0
-    var donorCampaign = "c2"
-    var donorCadence = "Theo đợt"
 
     init {
         load()
@@ -201,17 +205,6 @@ class DemoStore(context: Context) {
         }
     }
 
-    fun campaign(id: String): Campaign = campaigns.firstOrNull { it.id == id } ?: campaigns.first()
-    fun registration(id: String): Registration? = registrations.firstOrNull { it.id == id }
-    fun inCampaign(id: String): List<Registration> = registrations.filter { it.campaignId == id }
-    fun mine(id: String): Registration? =
-        registrations.firstOrNull { it.mine && it.campaignId == id && it.status != CANCELLED }
-
-    fun count(id: String, status: String): Int = inCampaign(id).count { it.status == status }
-    fun assigned(id: String): Int = count(id, ALLOCATED) + count(id, RECEIVED)
-    fun received(campaign: Campaign): Int =
-        if (campaign.archived) campaign.archivedReceived else count(campaign.id, RECEIVED)
-
     fun register(
         campaignId: String, name: String, phone: String, note: String, mine: Boolean, assisted: Boolean,
     ): Registration {
@@ -258,4 +251,29 @@ class DemoStore(context: Context) {
         val value = code.trim()
         return registrations.firstOrNull { it.code.equals(value, ignoreCase = true) }
     }
+}
+
+/** Data used to render the XML screens. A connected snapshot lives only in memory. */
+open class ScreenData {
+    val campaigns = mutableListOf<DemoStore.Campaign>()
+    val registrations = mutableListOf<DemoStore.Registration>()
+    val receivedCounts = mutableMapOf<String, Int>()
+    val handoverTimes = mutableMapOf<String, List<String>>()
+    var profileName = ""
+    var profilePhone = ""
+    var donorPledged = 0
+    var donorCampaign = "c2"
+    var donorCadence = "Theo đợt"
+
+    fun campaign(id: String): DemoStore.Campaign = campaigns.firstOrNull { it.id == id } ?: campaigns.first()
+    fun registration(id: String): DemoStore.Registration? = registrations.firstOrNull { it.id == id }
+    fun inCampaign(id: String): List<DemoStore.Registration> = registrations.filter { it.campaignId == id }
+    fun mine(id: String): DemoStore.Registration? =
+        registrations.firstOrNull { it.mine && it.campaignId == id && it.status != DemoStore.CANCELLED && it.status != DemoStore.REJECTED }
+
+    fun count(id: String, status: String): Int = inCampaign(id).count { it.status == status }
+    fun assigned(id: String): Int = count(id, DemoStore.ALLOCATED) + count(id, DemoStore.RECEIVED)
+    fun received(campaign: DemoStore.Campaign): Int =
+        if (campaign.archived) campaign.archivedReceived else receivedCounts[campaign.id] ?: count(campaign.id, DemoStore.RECEIVED)
+
 }

@@ -9,7 +9,8 @@ enum class RegistrationStatus(val code: String, val label: String) {
     ALLOCATED("ALLOCATED", "Được nhận"),
     WAITING("WAITING", "Danh sách chờ"),
     RECEIVED("RECEIVED", "Đã nhận"),
-    CANCELLED("CANCELLED", "Đã hủy");
+    CANCELLED("CANCELLED", "Đã hủy"),
+    REJECTED("REJECTED", "Không đủ điều kiện");
 
     companion object {
         fun fromCode(code: String): RegistrationStatus =

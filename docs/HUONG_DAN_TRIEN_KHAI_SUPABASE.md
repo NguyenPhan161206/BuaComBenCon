@@ -1,118 +1,65 @@
-# Hướng dẫn Triển khai và Kiểm thử Supabase cho Bữa Cơm Bên Con
+# Chạy và nghiệm thu Bữa cơm bên con với Supabase local
 
-Tài liệu này hướng dẫn cách thiết lập, chạy migration, nạp dữ liệu mẫu (seed), kiểm thử nghiệp vụ và kết nối ứng dụng Android với hệ thống Supabase local.
+Dùng Docker, Supabase CLI 3.3, Android SDK 36 và JDK 25 cho Gradle wrapper. Thực hiện tại thư mục gốc của dự án với dữ liệu mẫu.
 
----
-
-## 1. Yêu cầu môi trường
-
-- **Docker Desktop** (đã khởi chạy).
-- **Supabase CLI** (cài đặt qua npm hoặc Scoop/Homebrew):
-  ```bash
-  npm install -g supabase
-  # hoặc trên Windows Scoop: scoop bucket add supabase https://github.com/supabase/scoop-bucket.git && scoop install supabase
-  ```
-- **Android Studio & Android SDK** (compileSdk 36, Java 11/17).
-
----
-
-## 2. Cấu trúc thư mục Supabase
-
-```text
-supabase/
-├── config.toml                 # Cấu hình môi trường local, Auth, Inbucket (Mailpit)
-├── migrations/
-│   ├── 20261124000001_initial_schema.sql       # Bảng, khóa ngoại, ràng buộc, index
-│   ├── 20261124000002_rls_policies.sql         # Chính sách bảo mật Row-Level Security theo 4 vai trò
-│   └── 20261124000003_business_logic_rpcs.sql  # Giao dịch RPC xếp suất, hủy, cấp lại, chống giao trùng
-├── seed.sql                    # Dữ liệu mẫu kịch bản MVP: 35 hồ sơ cho 30 suất đợt c1, các tài khoản demo
-└── tests/
-    └── 01_business_rules_test.sql              # Bộ test kiểm tra 5 ca nghiệp vụ khắt khe
-```
-
----
-
-## 3. Khởi chạy Supabase Local
-
-1. Mở terminal tại thư mục gốc của dự án:
-   ```bash
-   cd C:\Users\QuynhNhu\Downloads\BuaComBenCon-main\BuaComBenCon-main
-   ```
-
-2. Khởi động các container Supabase (PostgreSQL, GoTrue Auth, PostgREST, Studio, Mailpit):
-   ```bash
-   supabase start
-   ```
-
-   Khi khởi động thành công, terminal sẽ hiển thị các URL:
-   - **Studio URL:** `http://127.0.0.1:54323`
-   - **API URL:** `http://127.0.0.1:54321`
-   - **DB URL:** `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
-   - **Inbucket (Mailpit Email testing):** `http://127.0.0.1:54324`
-   - **anon key & service_role key:** Hiển thị trên màn hình console.
-
-3. Áp dụng migrations và seed dữ liệu mẫu:
-   ```bash
-   supabase db reset
-   ```
-   Lệnh này tự động thực thi toàn bộ migration theo thứ tự thời gian và chạy `seed.sql`.
-
----
-
-## 4. Tài khoản Demo đã cấu hình sẵn trong Seed Data
-
-Mật khẩu mặc định cho tất cả tài khoản demo là: `MatKhau@123`
-
-| Vai trò | Email đăng nhập | Số điện thoại | Quyền hạn chính |
-| --- | --- | --- | --- |
-| **Người chăm sóc** | `giadinh@buacombencon.vn` | `0900000013` | Tự đăng ký, xem đăng ký của mình, lấy mã nhận, hủy suất |
-| **Điều phối viên** | `dieuphoi@buacombencon.vn` | `0900000001` | Tạo đợt, cập nhật chỉ tiêu, đăng ký hộ, xét duyệt, phân bổ, cấp lại suất |
-| **Tình nguyện viên**| `tinhnguyen@buacombencon.vn`| `0900000002` | Quét/nhập mã nhận, kiểm tra tính hợp lệ, xác nhận giao nhận 1 lần |
-| **Nhà hảo tâm** | `nhahaotam@buacombencon.vn` | `0900000003` | Gửi cam kết suất ăn theo đợt/tuần/tháng, xem báo cáo minh bạch |
-
----
-
-## 5. Chạy kiểm thử nghiệp vụ (Business Rules Tests)
-
-Thực thi test script SQL trong thư mục `tests/`:
+## 1. Dựng môi trường thử
 
 ```bash
-# Sử dụng psql kết nối tới database local
-psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f supabase/tests/01_business_rules_test.sql
+npx --yes supabase@3.3.0 start
+npx --yes supabase@3.3.0 status
+./gradlew :app:assembleDebug :app:lintDebug
 ```
 
-Kết quả mong đợi:
-```text
-NOTICE:  PASS: Test Case 1 (Bổ sung muộn) thành công.
-NOTICE:  PASS: Test Case 2 (Trùng mốc) thành công.
-NOTICE:  PASS: Test Case 3 (Xét sau lượt đầu) thành công.
-NOTICE:  PASS: Test Case 4 (Cấp lại suất) thành công.
-NOTICE:  PASS: Test Case 5 (Chống giao nhận trùng lặp) thành công.
-ROLLBACK
+Lần khởi động đầu áp dụng ba migration và nạp seed. Nhánh này cập nhật trực tiếp các migration thử nghiệm trước khi gộp. Với stack local cũ dùng riêng cho dữ liệu mẫu, chạy `npx --yes supabase@3.3.0 db reset` để nạp lại. Lệnh này xóa dữ liệu của database local đích.
+
+| Thành phần | Địa chỉ mặc định |
+| --- | --- |
+| API từ máy chạy Docker | `http://127.0.0.1:54321` |
+| API từ emulator chuẩn | `http://10.0.2.2:54321` |
+| PostgreSQL local | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
+| Studio | `http://127.0.0.1:54323` |
+| Mailpit | `http://127.0.0.1:54324` |
+
+Trong APK debug, mở bộ chọn vai trò ở đầu trang, chọn **Kết nối Supabase** rồi nhập URL và **Publishable key** từ `supabase status`. Nếu dùng cổng chuyển tiếp ADB, chạy `adb reverse tcp:54321 tcp:54321` rồi dùng `http://127.0.0.1:54321`. HTTP loopback được bật riêng cho bản debug. Phiên đăng nhập lưu trong bộ nhớ ứng dụng, giữ qua xoay màn hình và yêu cầu đăng nhập lại sau khi tiến trình kết thúc.
+
+| Vai trò mẫu | Email |
+| --- | --- |
+| Người chăm sóc | `giadinh@buacombencon.vn` |
+| Điều phối viên | `dieuphoi@buacombencon.vn` |
+| Tình nguyện viên | `tinhnguyen@buacombencon.vn` |
+| Nhà hảo tâm | `nhahaotam@buacombencon.vn` |
+
+Mật khẩu seed dùng chung là `MatKhau@123`. Trong chế độ Supabase, vai trò tới từ tài khoản. Để thử vai trò khác, đăng xuất rồi đăng nhập bằng tài khoản tương ứng.
+
+## 2. Kiểm tra Auth qua Mailpit
+
+1. Với địa chỉ email giả mới, chọn **Tạo tài khoản người chăm sóc**. Mở Mailpit, lấy mã email xác nhận và nhập vào app. Đăng nhập lại rồi kiểm tra vai trò Người chăm sóc.
+2. Chọn **Quên mật khẩu** cho tài khoản vừa tạo. Lấy mã từ email khôi phục, nhập mã và mật khẩu mới. Kiểm tra đăng nhập bằng mật khẩu mới.
+3. Đăng nhập lần lượt bốn tài khoản seed để kiểm tra vai trò và đợt được phân công. Tài khoản seed đã xác nhận email trước.
+
+Mẫu email local trong `supabase/templates/` chứa mã một lần. Mailpit giữ email trong môi trường thử. [Tài liệu Supabase Auth local](https://supabase.com/docs/guides/auth/testing-auth-flows)
+
+## 3. Kiểm tra xếp và giao suất
+
+```bash
+psql -X -v ON_ERROR_STOP=1 postgresql://postgres:postgres@127.0.0.1:54322/postgres \
+  -f supabase/tests/01_business_rules_test.sql
 ```
 
----
+Bộ test tạo dữ liệu riêng trong giao dịch rồi rollback. Các ca kiểm tra thứ tự theo mốc đủ thông tin và số tiếp nhận, xét muộn, hủy và cấp lại, 35 hồ sơ cho 30 suất, phạm vi đọc của tình nguyện viên và đối chiếu khi gửi lại xác nhận giao.
 
-## 6. Kết nối từ Android Emulator vào Supabase Local
+1. Vừa nạp seed, đăng nhập Người chăm sóc và gửi hồ sơ vào **Thêm một bữa cơm lành**. Đợt nhận hồ sơ mới trong 5 phút đầu. Đăng xuất, đăng nhập Điều phối viên, tìm cùng đợt và xét hồ sơ.
+2. Sau phút thứ 7 và trước phút thứ 15, chọn **Phân bổ lần đầu**. Kiểm tra hồ sơ đã xét đạt nhận mã. Khi chuyển vai trò, đăng nhập đúng tài khoản rồi chọn **Làm mới dữ liệu**.
+3. Đăng nhập Tình nguyện viên, chọn **Bữa trưa ấm lòng**, nhập mã seed `BC0013` và bấm kiểm tra. Kiểm tra mã giữ nguyên số đã trao. Bấm **Đã giao suất** sau bước giao giả lập, rồi tra lại mã. Số đã trao phải tăng đúng một lượt.
+4. Với hai phiên thử trên cùng một đợt gần hết nguồn, thử xác nhận cùng một mã, giao hai mã khi chỉ còn một suất thực chuẩn bị và cấp lại khi chỉ còn một suất trống. Đối chiếu số lượt đã giao và vé còn hiệu lực trong database.
+5. Nhập một cam kết từ tài khoản Nhà hảo tâm. Kiểm tra cam kết xuất hiện và số suất đã xác nhận giữ nguyên. Mở báo cáo của đợt đã công bố.
 
-1. Khi chạy ứng dụng trên **Android Emulator**, địa chỉ máy host cục bộ được ánh xạ qua:
-   - `http://10.0.2.2:54321` (đã được cấu hình trong `SupabaseConfig.DEFAULT_URL`).
-2. Nếu chạy trên **thiết bị thật qua Wi-Fi**, đổi IP trong `SupabaseConfig.kt` thành IP LAN của máy tính (ví dụ: `http://192.168.1.x:54321`).
-3. Chuyển đổi giữa chế độ Demo và Supabase:
-   ```kotlin
-   // Trong code khởi tạo hoặc cài đặt
-   repositoryProvider.mode = DataSourceMode.SUPABASE
-   ```
+Điều phối viên quản lý đợt mình tạo. Tình nguyện viên được gán theo đợt trong `campaign_volunteers`. Quy tắc nhận diện người nhận trong MVP dùng cặp tên và số liên hệ đã chuẩn hóa. Hai người có cùng số liên hệ và tên khác nhau có thể có hồ sơ riêng.
 
----
+## 4. Kiểm tra chế độ demo
 
-## 7. Sao lưu và Khôi phục Database (Backup & Restore)
+```bash
+BCC_QA_OUTPUT=/tmp/bcc-qa ./tools/qa/check-local.sh --render
+```
 
-- **Sao lưu:**
-  ```bash
-  supabase db dump -f backup_buacombencon_$(date +%Y%m%d).sql
-  ```
-- **Khôi phục vào database mới:**
-  ```bash
-  psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f backup_buacombencon_YYYYMMDD.sql
-  ```
+Trên emulator, kiểm tra nút Quay lại, bản nháp sau xoay màn hình và dữ liệu demo đã lưu. Layoutlib dựng XML và bộ QA kiểm tra mã QR bằng OpenCV. APK trong `apk/` thuộc bản demo trước đợt chuyển đổi. Dùng APK Gradle tại `app/build/outputs/apk/debug/app-debug.apk` để nghiệm thu kết nối.

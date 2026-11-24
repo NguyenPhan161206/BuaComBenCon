@@ -1,138 +1,127 @@
--- Test Suite 01: Business Rules Verification
--- Tests the four critical queue/allocation test cases from Section 5 of the proposal:
--- 1. Bổ sung muộn (Late completion timestamp ordering)
--- 2. Trùng mốc (Tie-breaking by queue_number)
--- 3. Xét sau lượt đầu (Late review insertion into front of waitlist)
--- 4. Cấp lại (Cancelled slot reallocation to top waiting applicant)
--- 5. Anti-double claim (Atomic lock preventing dual handovers)
-
+-- Run with psql -X -v ON_ERROR_STOP=1 on a seeded local instance.
 BEGIN;
+SET LOCAL plpgsql.check_asserts = on;
 
--- Setup isolated test campaign with capacity 1
-INSERT INTO public.campaigns (
-    id, title, meal, event_date, pickup_time, location,
-    confirmed_supply, prepared_supply, deadline, rules
-) VALUES (
-    'test_c1', 'Đợt kiểm thử xếp suất', 'Bữa trưa', CURRENT_DATE, '11:00 – 12:00',
-    'Điểm kiểm thử', 1, 1, '10:00', 'Tiêu chuẩn kiểm thử'
-);
+CREATE FUNCTION pg_temp.campaign(key text, capacity integer, phase text)
+RETURNS void LANGUAGE sql AS $$
+    INSERT INTO public.campaigns (id, coordinator_id, title, meal, event_date, pickup_time,
+        location, confirmed_supply, prepared_supply, deadline, rules, registration_closes_at,
+        completion_closes_at, allocation_at, cancellation_closes_at, reallocation_closes_at,
+        pickup_starts_at, pickup_ends_at, allocated_at)
+    VALUES (key, '22222222-2222-2222-2222-222222222222', key, 'Trưa', current_date, '11:00 – 12:00',
+        'Mẫu', capacity, capacity, 'Mẫu', 'Mẫu',
+        now() + (CASE phase WHEN 'intake' THEN 5 WHEN 'complete' THEN -10 ELSE -90 END) * interval '1 minute',
+        now() + (CASE WHEN phase IN ('intake','complete') THEN 10 ELSE -75 END) * interval '1 minute',
+        now() + (CASE WHEN phase IN ('intake','complete') THEN 15 ELSE -60 END) * interval '1 minute',
+        now() + (CASE WHEN phase = 'pickup' THEN -40 ELSE 30 END) * interval '1 minute',
+        now() + (CASE WHEN phase = 'pickup' THEN -30 ELSE 40 END) * interval '1 minute',
+        now() + (CASE WHEN phase = 'pickup' THEN -15 ELSE 50 END) * interval '1 minute',
+        now() + interval '1 day', CASE WHEN phase = 'pickup' THEN now() - interval '1 hour' END);
+$$;
 
--- Test Case 1: Bổ sung muộn
--- "Khi còn một suất, hồ sơ đăng ký hộ đủ thông tin lúc 08:02 được cấp trước hồ sơ gửi lúc 08:01 nhưng đến 08:15 mới đủ thông tin."
-INSERT INTO public.registrations (
-    id, campaign_id, recipient_name, phone, completed_info_at, queue_number, status
-) VALUES
-    ('TEST_REG_A', 'test_c1', 'Hồ sơ A gửi 08:01 đủ 08:15', '0911111111', '2026-11-24 08:15:00+07', 1, 'PENDING'),
-    ('TEST_REG_B', 'test_c1', 'Hồ sơ B gửi hộ đủ 08:02', '0922222222', '2026-11-24 08:02:00+07', 2, 'PENDING');
+CREATE FUNCTION pg_temp.registration(
+    key text, campaign text, minutes int, queue bigint, approved boolean, status text DEFAULT 'PENDING'
+) RETURNS void LANGUAGE sql AS $$
+    WITH recipient AS (
+        INSERT INTO public.recipients (name_key,phone) VALUES (key,'0912222222') RETURNING id
+    )
+    INSERT INTO public.registrations (id, campaign_id, recipient_id, user_id,
+        recipient_name, phone, consent_at, completed_info_at, queue_number, is_approved, status)
+    SELECT key, campaign, id, '11111111-1111-1111-1111-111111111111', key, '0912222222', now() - interval '4 hours',
+        now() - minutes * interval '1 minute', queue, approved, status FROM recipient;
+$$;
 
--- Run allocation
-SELECT public.allocate_campaign_meals('test_c1');
+SELECT pg_temp.campaign('qa-allocate', 1, 'allocate');
+SELECT pg_temp.campaign('qa-tie', 1, 'allocate');
+SELECT pg_temp.campaign('qa-capacity', 30, 'allocate');
+SELECT pg_temp.campaign('qa-pickup', 1, 'pickup');
+SELECT pg_temp.campaign('qa-complete', 1, 'complete');
+SELECT pg_temp.campaign('qa-intake', 1, 'intake');
 
--- Verify TEST_REG_B is ALLOCATED and TEST_REG_A is WAITING
-DO $$
-DECLARE
-    v_status_a TEXT;
-    v_status_b TEXT;
-BEGIN
-    SELECT status INTO v_status_a FROM public.registrations WHERE id = 'TEST_REG_A';
-    SELECT status INTO v_status_b FROM public.registrations WHERE id = 'TEST_REG_B';
+SELECT pg_temp.registration('late-completion', 'qa-allocate', 130, 10001, true);
+SELECT pg_temp.registration('early-completion', 'qa-allocate', 143, 10002, true);
+SELECT pg_temp.registration('late-review', 'qa-allocate', 135, 10003, NULL);
+SELECT pg_temp.registration('declined', 'qa-allocate', 150, 10004, NULL);
+SELECT pg_temp.registration('unreviewed', 'qa-allocate', 151, 10005, NULL);
+SELECT pg_temp.registration('tie13', 'qa-tie', 150, 10013, true);
+SELECT pg_temp.registration('tie12', 'qa-tie', 150, 10012, true);
+SELECT pg_temp.registration('qa-case-' || n, 'qa-capacity', 200 - n, 10100 + n, true) FROM generate_series(1,35) g(n);
+SELECT pg_temp.registration('pickup-ok', 'qa-pickup', 200, 11000, true, 'ALLOCATED');
+SELECT pg_temp.registration('incomplete', 'qa-complete', NULL, 11001, NULL);
 
-    ASSERT v_status_b = 'ALLOCATED', 'Test Case 1 Thất bại: Hồ sơ B đủ thông tin lúc 08:02 phải được ALLOCATED';
-    ASSERT v_status_a = 'WAITING', 'Test Case 1 Thất bại: Hồ sơ A đủ thông tin lúc 08:15 phải vào WAITING';
-    RAISE NOTICE 'PASS: Test Case 1 (Bổ sung muộn) thành công.';
-END $$;
+INSERT INTO public.campaign_volunteers (campaign_id, volunteer_id)
+VALUES ('qa-pickup', '33333333-3333-3333-3333-333333333333');
+INSERT INTO public.tickets (registration_id, ticket_code, qr_payload, valid_from, valid_until)
+VALUES ('pickup-ok', 'QA_VALID', 'QA_VALID', now() - interval '15 minutes', now() + interval '1 hour');
 
--- Test Case 2: Trùng mốc
--- "Hai hồ sơ đủ điều kiện có cùng mốc đủ thông tin. Hồ sơ số tiếp nhận 12 đứng trước số 13."
-DELETE FROM public.registrations WHERE campaign_id = 'test_c1';
-UPDATE public.campaigns SET confirmed_supply = 1 WHERE id = 'test_c1';
-
-INSERT INTO public.registrations (
-    id, campaign_id, recipient_name, phone, completed_info_at, queue_number, status
-) VALUES
-    ('TEST_REG_13', 'test_c1', 'Hồ sơ 13', '0913131313', '2026-11-24 08:00:00+07', 13, 'PENDING'),
-    ('TEST_REG_12', 'test_c1', 'Hồ sơ 12', '0912121212', '2026-11-24 08:00:00+07', 12, 'PENDING');
-
-SELECT public.allocate_campaign_meals('test_c1');
-
-DO $$
-DECLARE
-    v_status_12 TEXT;
-    v_status_13 TEXT;
-BEGIN
-    SELECT status INTO v_status_12 FROM public.registrations WHERE id = 'TEST_REG_12';
-    SELECT status INTO v_status_13 FROM public.registrations WHERE id = 'TEST_REG_13';
-
-    ASSERT v_status_12 = 'ALLOCATED', 'Test Case 2 Thất bại: Hồ sơ 12 phải được ALLOCATED trước hồ sơ 13';
-    ASSERT v_status_13 = 'WAITING', 'Test Case 2 Thất bại: Hồ sơ 13 phải ở WAITING';
-    RAISE NOTICE 'PASS: Test Case 2 (Trùng mốc) thành công.';
-END $$;
-
--- Test Case 3: Xét sau lượt đầu
--- "Lượt 09:45 đã cấp hết suất. Hồ sơ đủ thông tin lúc 08:15, được xét đạt lúc 09:50, vào hàng chờ trước hồ sơ đủ thông tin lúc 08:20."
-INSERT INTO public.registrations (
-    id, campaign_id, recipient_name, phone, completed_info_at, queue_number, status
-) VALUES
-    ('TEST_REG_LATE', 'test_c1', 'Hồ sơ xét muộn lúc 09:50', '0999999999', '2026-11-24 08:15:00+07', 99, 'PENDING'),
-    ('TEST_REG_AFTER', 'test_c1', 'Hồ sơ nộp 08:20', '0988888888', '2026-11-24 08:20:00+07', 100, 'WAITING');
-
--- Review late record
-SELECT public.review_registration('TEST_REG_LATE', true, 'Xét đạt sau giờ phân bổ');
-SELECT public.allocate_campaign_meals('test_c1');
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 
 DO $$
-DECLARE
-    v_first_in_queue TEXT;
+DECLARE result jsonb;
 BEGIN
-    -- Top of waiting list should be TEST_REG_13 (08:00), then TEST_REG_LATE (08:15), then TEST_REG_AFTER (08:20)
-    SELECT id INTO v_first_in_queue FROM public.registrations
-    WHERE campaign_id = 'test_c1' AND status = 'WAITING'
-    ORDER BY completed_info_at ASC, queue_number ASC
-    OFFSET 1 LIMIT 1;
+    PERFORM public.review_registration('declined', false);
+    PERFORM public.allocate_campaign_meals('qa-allocate');
+    ASSERT (SELECT status FROM public.registrations WHERE id = 'early-completion') = 'ALLOCATED', 'Earlier complete record gets the slot';
+    ASSERT (SELECT status FROM public.registrations WHERE id = 'declined') = 'REJECTED', 'Rejected record must not get a slot';
+    ASSERT (SELECT status FROM public.registrations WHERE id = 'unreviewed') = 'PENDING', 'Unreviewed record must stay pending';
+    ASSERT (SELECT status FROM public.registrations WHERE id = 'late-completion') = 'WAITING', 'Other eligible record is waiting';
+    RAISE NOTICE 'PASS: late completion, rejected and unreviewed eligibility';
 
-    ASSERT v_first_in_queue = 'TEST_REG_LATE', 'Test Case 3 Thất bại: Hồ sơ xét muộn phải đứng trước hồ sơ 08:20 trong danh sách chờ';
-    RAISE NOTICE 'PASS: Test Case 3 (Xét sau lượt đầu) thành công.';
-END $$;
+    PERFORM public.allocate_campaign_meals('qa-tie');
+    ASSERT (SELECT status FROM public.registrations WHERE id = 'tie12') = 'ALLOCATED', 'Sequence breaks timestamp tie';
+    RAISE NOTICE 'PASS: timestamp tie';
 
--- Test Case 4: Cấp lại
--- "Người được cấp trong ca bổ sung muộn hủy đúng hạn. Khi điều phối viên xác nhận cấp lại, hồ sơ đầu hàng chờ được cấp đúng suất vừa giải phóng."
-SELECT public.cancel_registration('TEST_REG_12');
-SELECT public.reallocate_meal('test_c1');
+    PERFORM public.review_registration('late-review', true);
+    ASSERT (SELECT status FROM public.registrations WHERE id = 'late-review') = 'WAITING', 'Approved late record goes to waitlist';
+    ASSERT (SELECT status FROM public.registrations WHERE id = 'early-completion') = 'ALLOCATED', 'Assigned slot is unchanged';
+    PERFORM public.cancel_registration('early-completion');
+    ASSERT (SELECT is_revoked FROM public.tickets WHERE registration_id = 'early-completion'), 'Cancelled ticket is revoked';
+    result := public.reallocate_meal('qa-allocate');
+    ASSERT result->>'registration_id' = 'late-review', 'Earlier complete late-reviewed record is first in waitlist';
+    RAISE NOTICE 'PASS: late review, cancellation and reallocation';
 
+    result := public.allocate_campaign_meals('qa-capacity');
+    ASSERT (result->>'allocated')::int = 30 AND (result->>'waiting')::int = 5, '35 applicants -> 30 allocated and 5 waiting';
+    RAISE NOTICE 'PASS: 35/30/5';
+END;
+$$;
+
+SELECT set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
 DO $$
-DECLARE
-    v_status_12 TEXT;
-    v_status_13 TEXT;
+DECLARE result jsonb;
 BEGIN
-    SELECT status INTO v_status_12 FROM public.registrations WHERE id = 'TEST_REG_12';
-    SELECT status INTO v_status_13 FROM public.registrations WHERE id = 'TEST_REG_13';
+    result := public.submit_registration('qa-intake', 'Người nhận thử', '+84 912345678',
+        p_consent => true);
+    ASSERT result->>'status' = 'PENDING', 'New application is pending';
+    PERFORM public.complete_registration('incomplete', 'Đã bổ sung');
+    ASSERT (SELECT completed_info_at IS NOT NULL FROM public.registrations WHERE id = 'incomplete'),
+        'Supplementation must work after intake closes and before completion closes';
+    ASSERT NOT has_table_privilege('authenticated', 'public.profiles', 'UPDATE'), 'Profiles cannot be edited directly by clients';
+    ASSERT NOT has_function_privilege('anon','public.allocate_campaign_meals(text)','EXECUTE'), 'Only authenticated callers may allocate';
+    RAISE NOTICE 'PASS: authenticated intake, supplementation, write and execute grants';
+END;
+$$;
 
-    ASSERT v_status_12 = 'CANCELLED', 'Test Case 4 Thất bại: Người hủy phải có trạng thái CANCELLED';
-    ASSERT v_status_13 = 'ALLOCATED', 'Test Case 4 Thất bại: Hồ sơ 13 đầu hàng chờ phải được cấp lại ALLOCATED';
-    RAISE NOTICE 'PASS: Test Case 4 (Cấp lại suất) thành công.';
-END $$;
-
--- Test Case 5: Giao nhận an toàn 1 lần (Chống giao trùng)
+SELECT set_config('request.jwt.claim.sub', '33333333-3333-3333-3333-333333333333', true);
 DO $$
-DECLARE
-    v_ticket_code TEXT := 'BCTEST_13';
-    v_error_caught BOOLEAN := false;
+DECLARE result jsonb;
 BEGIN
-    -- Update ticket code for consistency
-    UPDATE public.tickets SET ticket_code = v_ticket_code WHERE registration_id = 'TEST_REG_13';
+    ASSERT EXISTS (SELECT FROM public.campaigns WHERE id = 'qa-pickup'), 'Volunteer sees only assigned campaigns';
+    ASSERT NOT EXISTS (SELECT FROM public.campaigns WHERE id = 'qa-tie'), 'Volunteer has no unassigned campaign rows';
+    ASSERT NOT EXISTS (SELECT FROM public.registrations), 'Volunteer never reads registration records directly';
 
-    -- First handover succeeds
-    PERFORM public.confirm_handover(v_ticket_code, 'test_c1', 'QR_SCAN');
+    result := public.verify_ticket('QA_VALID', 'qa-pickup');
+    ASSERT (result->>'valid')::boolean, 'Code verifies in time';
+    ASSERT (public.campaign_summary('qa-pickup')->>'received')::int = 0, 'Verification alone cannot record a handover';
+    result := public.confirm_handover('QA_VALID', 'qa-pickup');
+    ASSERT NOT (result->>'already_recorded')::boolean, 'First handover recorded';
+    result := public.confirm_handover('QA_VALID', 'qa-pickup');
+    ASSERT (result->>'already_recorded')::boolean, 'Reconciliation returns existing result';
+    ASSERT (public.campaign_summary('qa-pickup')->>'received')::int = 1, 'Exactly one handover';
+    RAISE NOTICE 'PASS: campaign scope, verify and idempotent handover';
+END;
+$$;
 
-    -- Second handover attempt must fail with exception
-    BEGIN
-        PERFORM public.confirm_handover(v_ticket_code, 'test_c1', 'QR_SCAN');
-    EXCEPTION WHEN OTHERS THEN
-        v_error_caught := true;
-    END;
-
-    ASSERT v_error_caught = true, 'Test Case 5 Thất bại: Lần quét thứ hai phải bị chặn chống giao trùng';
-    RAISE NOTICE 'PASS: Test Case 5 (Chống giao nhận trùng lặp) thành công.';
-END $$;
-
+RESET ROLE;
 ROLLBACK;

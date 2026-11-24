@@ -6,4 +6,15 @@
     <string name="demo">BẢN UI · DỮ LIỆU MẪU</string>
     <string name="register_note">Gửi đăng ký chưa có nghĩa là được nhận suất. Đơn vị tổ chức sẽ cập nhật kết quả sắp xếp.</string>
     <string name="privacy">Chỉ cần thông tin người chăm sóc để liên hệ. Không yêu cầu tên, ảnh hoặc bệnh án của trẻ.</string>
+    <string name="connection_url">Địa chỉ Supabase</string>
+    <string name="connection_key">Publishable key hoặc anon key</string>
+    <string name="connection_email">Email tài khoản</string>
+    <string name="connection_password">Mật khẩu</string>
+    <string name="allocate_campaign_action">Phân bổ lần đầu</string>
+    <string name="reallocate_campaign_action">Cấp lại một suất</string>
+    <string name="complete_registration_action">Ghi nhận đủ thông tin</string>
+    <string name="incomplete_registration">Hồ sơ tiếp nhận, còn cần bổ sung</string>
+    <string name="connection_sign_up">Tạo tài khoản người chăm sóc</string>
+    <string name="recovery_code">Mã trong email</string>
+    <string name="new_password">Mật khẩu mới</string>
 </resources>

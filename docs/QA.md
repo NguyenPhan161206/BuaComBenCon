@@ -1,5 +1,22 @@
 # Kiểm tra dự án giao diện
 
+## Nhánh MVC và Supabase
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Gradle `:app:assembleDebug :app:lintDebug` | Build debug thành công. Lint có 0 lỗi và 339 cảnh báo. |
+| Demo và XML | 18/18 ca nghiệp vụ, OpenCV đọc đúng `BC0013`, layoutlib dựng 32/32 cấu hình. |
+| Supabase local | CLI 3.3.0 và PostgreSQL 17 áp dụng migration và seed. Bộ SQL chạy qua cả các ca quyền, hạn, thứ tự, cấp lại và 35 hồ sơ cho 30 suất. |
+| Auth và Mailpit | Bốn tài khoản mẫu đăng nhập đúng vai trò. Tài khoản thử mới nhận mã xác nhận và mã khôi phục trong Mailpit, đổi mật khẩu rồi đăng nhập lại qua API. |
+| Các luồng qua Data API | Gửi, xét, cấp suất và đọc vé theo tài khoản. Cam kết của nhà hảo tâm giữ nguyên chỉ tiêu xác nhận. |
+| Repository Kotlin kết nối thật | Chạy từ JVM kiểm thử, nạp dữ liệu đúng cho bốn vai trò trên stack Supabase local. |
+| Giao dịch đồng thời | Hai yêu cầu cùng mã chỉ tạo một lượt giao. Hai mã tranh suất thực chuẩn bị cuối, hai yêu cầu cấp lại tranh suất cuối, và hủy khi đang phát đều giữ đúng số suất. |
+| Android emulator | Chưa hoàn tất lượt thử APK. AVD API 36 chạy chế độ phần mềm kết nối ADB nhưng chưa báo hoàn tất khởi động. |
+
+APK Gradle của lần kiểm tra có SHA-256
+`28691cb03f91ff39041481ef01472056fb77553017fa1d9ba869c15ff3579bd6`.
+Ảnh và APK được lưu trong Git từ bản demo trước là mốc lịch sử.
+
 ## Bản Kotlin và XML
 
 | Hạng mục | Kết quả |

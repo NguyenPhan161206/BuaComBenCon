@@ -11,5 +11,12 @@
     <TextView style="@style/Body" android:text="@string/privacy" android:layout_marginTop="18dp" android:textSize="12sp"/>
     <CheckBox android:id="@+id/consent" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp" android:text="Tôi đồng ý cung cấp thông tin trên để đơn vị liên hệ và xác nhận đăng ký." android:textSize="13sp" android:textColor="@color/ink" android:layout_marginTop="10dp"/>
     <TextView style="@style/Body" android:text="@string/register_note" android:textSize="12sp" android:layout_marginTop="12dp"/>
+    <vn.edu.buacombencon.UiCheckBox
+        android:id="@+id/incomplete_registration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/incomplete_registration"
+        android:visibility="gone"
+        android:saveEnabled="false" />
     <Button android:id="@+id/submit_form" style="@style/PrimaryButton" android:text="Gửi đăng ký" android:layout_marginTop="20dp"/>
 </LinearLayout>

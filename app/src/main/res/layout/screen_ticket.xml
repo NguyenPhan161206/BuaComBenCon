@@ -140,6 +140,11 @@
         android:importantForAccessibility="no" />
     <vn.edu.buacombencon.UiButton
         style="@style/UiSecondaryButton"
+        android:id="@+id/complete_registration_action"
+        android:text="@string/complete_registration_action"
+        android:visibility="gone" />
+    <vn.edu.buacombencon.UiButton
+        style="@style/UiSecondaryButton"
         android:id="@+id/cancel_registration_action"
         android:text="Tôi không thể đến nhận"
         android:visibility="gone" />
