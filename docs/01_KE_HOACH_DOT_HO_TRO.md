@@ -56,4 +56,4 @@ WHERE id = 'c2';
 4. Đóng tiếp nhận trước hạn. Kiểm tra Người chăm sóc thấy đợt đã đóng. Mở lại khi còn hạn và kiểm tra nút đăng ký xuất hiện. Với đợt hết hạn, server phải từ chối mở lại kênh nhận mới.
 5. Nếu dùng đợt mới cho cả bước 05, chuẩn bị phân công tình nguyện viên trong dữ liệu thử. Bản hiện tại lấy quyền phát từ `campaign_volunteers` và chưa có thao tác phân công trong luồng tạo đợt. Nếu thiếu phân công, tiếp tục chuỗi chính bằng `c2`.
 
-**Hoàn thành khi** đã ghi mã đợt, quyền điều phối và phát suất, các mốc server, số xác nhận và số thực chuẩn bị. [Tiếp theo · 02. Gửi hồ sơ](02_KE_HOACH_GUI_HO_SO.md)
+**Hoàn thành:** Đã nghiệm thu trên nhánh `hao-26/11` với mã đợt `c2`, quyền điều phối (`coordinator`), quyền phát suất (`volunteer` trong `campaign_volunteers`), các mốc server, số xác nhận (30) và thực chuẩn bị (30). [Chi tiết QA](QA.md#nghiệm-thu-kế-hoạch-01--chuẩn-bị-đợt-hỗ-trợ-nhánh-hao-2611) · [Tiếp theo · 02. Gửi hồ sơ](02_KE_HOACH_GUI_HO_SO.md)

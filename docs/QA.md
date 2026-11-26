@@ -1,5 +1,26 @@
 # Kiểm tra dự án giao diện
 
+## Nghiệm thu Kế hoạch 01 · Chuẩn bị đợt hỗ trợ (Nhánh `hao-26/11`)
+
+Kiểm tra và nghiệm thu ngày 26/11/2026 trên nhánh `hao-26/11`. Đợt hỗ trợ mẫu `c2` và luồng tạo đợt mới được đối chiếu đáp ứng đầy đủ tiêu chí nghiệm thu của [01_KE_HOACH_DOT_HO_TRO.md](01_KE_HOACH_DOT_HO_TRO.md).
+
+| Hạng mục kiểm tra | Kết quả | Chi tiết đối chiếu |
+| --- | --- | --- |
+| **Đợt mẫu `c2` ("Thêm một bữa cơm lành")** | Đạt | `id: c2`, người sở hữu: Điều phối viên (`22222222-2222-2222-2222-222222222222`), tình nguyện viên phụ trách: `33333333-3333-3333-3333-333333333333` trong `campaign_volunteers`. |
+| **Chỉ tiêu nguồn đợt `c2`** | Đạt | `confirmed_supply`: 30, `prepared_supply`: 30, `pledged_supply`: 10. Đã kiểm tra ràng buộc `prepared <= confirmed` và tối thiểu 1 suất. |
+| **Quản lý tiếp nhận (Đóng/Mở)** | Đạt | Điều phối viên đóng tiếp nhận -> Người chăm sóc thấy "Đã đóng đăng ký" và không thể gửi hồ sơ. Mở lại khi còn hạn -> Nút Đăng ký hoạt động bình thường. |
+| **Tạo đợt mới & Phân công tình nguyện viên** | Đạt | Bổ sung migration `20261126000001_assign_campaign_volunteer.sql` và hỗ trợ gán tình nguyện viên khi tạo đợt mới qua `create_campaign`. |
+| **Kiểm thử logic nghiệp vụ (`DomainChecks`)** | 29/29 Đạt | 29/29 ca kiểm tra nghiệp vụ và ca biên đạt trên JVM. |
+
+### Thông số bàn giao cho Kế hoạch 02 (`02_KE_HOACH_GUI_HO_SO.md`)
+* `campaign_id`: `c2`
+* `coordinator_id`: `22222222-2222-2222-2222-222222222222`
+* `volunteer_id`: `33333333-3333-3333-3333-333333333333`
+* `confirmed_supply`: 30
+* `prepared_supply`: 30
+* `is_registration_open`: `true`
+* Điểm phát: Điểm An Tâm (mẫu)
+
 ## Nhánh MVC và Supabase
 
 | Hạng mục | Kết quả |
