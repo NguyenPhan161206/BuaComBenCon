@@ -77,7 +77,7 @@ internal class MealActions(
             }
         } else {
             try {
-                onRegistered(demo.register(campaignId, name, phone, note, !assisted, assisted).id)
+                onRegistered(demo.register(campaignId, name, phone, note, !assisted, assisted, complete).id)
             } catch (error: IllegalStateException) {
                 showError(error)
             }

@@ -208,16 +208,32 @@ class DemoStore(context: Context) : ScreenData() {
 
     fun register(
         campaignId: String, name: String, phone: String, note: String, mine: Boolean, assisted: Boolean,
+        complete: Boolean = true,
     ): Registration {
         val campaign = campaign(campaignId)
         check(!campaign.archived && campaign.registrationOpen) { "Đợt này đã đóng đăng ký." }
-        check(!mine || mine(campaignId) == null) { "Bạn đã đăng ký đợt này." }
+        val cleanPhone = phone.replace(Regex("[\\s.-]"), "")
+        val duplicate = registrations.any {
+            it.campaignId == campaignId &&
+            it.status != CANCELLED && it.status != REJECTED &&
+            (it.phone.replace(Regex("[\\s.-]"), "") == cleanPhone || (mine && it.mine))
+        }
+        check(!duplicate) { "Người nhận này đã có hồ sơ đăng ký cho đợt này." }
         val id = String.format(Locale.US, "R%04d", registrations.size + 1)
         val registration = Registration(id, campaignId, name, phone, mine, assisted, PENDING)
         registration.note = note
+        registration.complete = complete
         registrations.add(registration)
         save()
         return registration
+    }
+
+    fun completeRegistration(registrationId: String, note: String): Boolean {
+        val reg = registration(registrationId) ?: return false
+        reg.complete = true
+        if (note.isNotEmpty()) reg.note = note
+        save()
+        return true
     }
 
     fun allocate(registration: Registration): String {
