@@ -39,6 +39,24 @@ Kiểm tra và nghiệm thu ngày 26/11/2026 trên nhánh `hao-26/11`. Luồng g
 * `is_approved`: `null` (Chờ điều phối viên xét duyệt điều kiện)
 * `tickets`: Chưa cấp vé (Sẽ được cấp sau khi xét đạt và chạy phân bổ)
 
+## Nghiệm thu Kế hoạch 03 · Xét duyệt và phân bổ (Nhánh `hao-26/11`)
+
+Kiểm tra và nghiệm thu ngày 26/11/2026 trên nhánh `hao-26/11`. Luồng xét duyệt điều kiện, phân bổ lần đầu và cấp lại từ danh sách chờ của Điều phối viên đã được nghiệm thu đầy đủ theo [03_KE_HOACH_XET_VA_PHAN_BO.md](03_KE_HOACH_XET_VA_PHAN_BO.md).
+
+| Hạng mục kiểm tra | Kết quả | Chi tiết đối chiếu |
+| --- | --- | --- |
+| **Xét duyệt điều kiện (`review`)** | Đạt | Chặn xét đạt hồ sơ thiếu thông tin; hồ sơ không đạt chuyển `REJECTED`; hồ sơ đạt trước phân bổ giữ `PENDING` (chờ mốc giờ); hồ sơ đạt sau phân bổ tự động vào danh sách chờ `WAITING`. |
+| **Phân bổ lần đầu (`allocateCampaign`)** | Đạt | Cấp tối đa theo `confirmed_supply`. Các hồ sơ trong giới hạn chuyển `ALLOCATED` và gắn vé nhận. Hồ sơ vượt giới hạn chuyển `WAITING`. Đánh dấu `campaign.allocated = true`. |
+| **Hủy và cấp lại từ hàng chờ (`reallocateMeal`)** | Đạt | Khi người chăm sóc hủy suất (`CANCELLED`), suất trống được giải phóng; Điều phối viên cấp lại suất cho hồ sơ đầu hàng chờ; tổng suất đang giữ không vượt quá số xác nhận; từ chối cấp lại khi hết suất trống. |
+| **Bảo vệ chỉ tiêu nguồn** | Đạt | Tổng số suất `ALLOCATED` + `RECEIVED` luôn nhỏ hơn hoặc bằng `confirmed_supply`. |
+| **Kiểm thử logic nghiệp vụ (`DomainChecks`)** | 43/43 Đạt | Toàn bộ 43 ca kiểm thử logic bao gồm xét duyệt, phân bổ, hàng chờ và cấp lại đạt trên JVM. |
+
+### Thông số bàn giao cho Kế hoạch 04 (`04_KE_HOACH_XEM_MA_NHAN.md`)
+* `campaign_id`: `c2` ("Thêm một bữa cơm lành")
+* Hồ sơ mẫu chính đã được cấp suất: trạng thái `ALLOCATED`
+* Mã nhận suất (`ticket_code`): định dạng ngắn `BC...` (hoặc `BC0013`) có mã QR tương ứng
+* Sẵn sàng để Người chăm sóc mở màn xem mã nhận, hướng dẫn điểm phát và thử luồng hủy suất ở bước 04.
+
 ## Nhánh MVC và Supabase
 
 | Hạng mục | Kết quả |
