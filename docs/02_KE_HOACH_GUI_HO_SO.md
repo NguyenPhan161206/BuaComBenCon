@@ -42,4 +42,4 @@ ORDER BY created_at DESC;
 - Ghi riêng các yêu cầu FR03 vượt quá form hiện tại. Bản hiện tại dùng tên và số liên hệ đã chuẩn hóa để đối chiếu, và RPC yêu cầu số điện thoại hợp lệ. Ca đăng ký hộ người không có điện thoại cần triển khai thêm phương thức liên hệ tại bàn hỗ trợ trước khi đánh dấu đạt FR03 đầy đủ.
 - Số liên hệ trên hồ sơ đăng ký được ghi tại thời điểm gửi. Việc cập nhật thông tin tài khoản ở bước 06 giữ nguyên dữ liệu đã ghi trong hồ sơ cũ. [Bước 06 · Sửa liên hệ](06_KE_HOACH_TAI_KHOAN_VA_PHIEN.md#4-sửa-thông-tin-liên-hệ)
 
-**Hoàn thành khi** hồ sơ hợp lệ đã xuất hiện cả trên app và Studio, có `registration_id` và chưa được cấp mã. [Tiếp theo · 03. Xét và phân bổ](03_KE_HOACH_XET_VA_PHAN_BO.md)
+**Hoàn thành:** Đã nghiệm thu trên nhánh `hao-26/11`. Hồ sơ hợp lệ đã được tạo ở trạng thái `PENDING`, chưa cấp mã, có đầy đủ `consent_at`, `completed_info_at` và cơ chế chống trùng lặp. [Chi tiết QA](QA.md#nghiệm-thu-kế-hoạch-02--gửi-hồ-sơ-đăng-ký-nhánh-hao-2611) · [Tiếp theo · 03. Xét và phân bổ](03_KE_HOACH_XET_VA_PHAN_BO.md)

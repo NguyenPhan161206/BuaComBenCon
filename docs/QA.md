@@ -21,6 +21,24 @@ Kiểm tra và nghiệm thu ngày 26/11/2026 trên nhánh `hao-26/11`. Đợt h�
 * `is_registration_open`: `true`
 * Điểm phát: Điểm An Tâm (mẫu)
 
+## Nghiệm thu Kế hoạch 02 · Gửi hồ sơ đăng ký (Nhánh `hao-26/11`)
+
+Kiểm tra và nghiệm thu ngày 26/11/2026 trên nhánh `hao-26/11`. Luồng gửi hồ sơ đăng ký của Người chăm sóc và Đăng ký hộ của Điều phối viên đã được nghiệm thu đầy đủ theo [02_KE_HOACH_GUI_HO_SO.md](02_KE_HOACH_GUI_HO_SO.md).
+
+| Hạng mục kiểm tra | Kết quả | Chi tiết đối chiếu |
+| --- | --- | --- |
+| **Tự đăng ký của Người chăm sóc** | Đạt | Form kiểm tra hợp lệ: Tên >= 2 ký tự, SĐT chuẩn 10 số, checkbox đồng ý (`consent`). Sau khi gửi, hồ sơ tạo mới ở trạng thái `PENDING`, `is_approved` để trống, chưa cấp vé. |
+| **Đăng ký hộ & Bổ sung thông tin** | Đạt | Điều phối viên đăng ký hộ (`is_assisted = true`), hỗ trợ cờ thiếu thông tin (`is_complete = false`). Thao tác bổ sung thông tin (`completeRegistration`) cập nhật cờ và ghi chú thành công. |
+| **Đối chiếu trùng danh tính** | Đạt | Chặn đăng ký tự thân trùng lặp; chặn trùng lặp qua lại giữa kênh tự đăng ký và đăng ký hộ theo số điện thoại người nhận. |
+| **Ca biên đóng đợt / hết hạn** | Đạt | Khi đợt đóng tiếp nhận, server và client chặn gửi hồ sơ mới với thông báo lỗi rõ ràng. Mở lại đợt cho phép đăng ký bình thường. |
+| **Kiểm thử logic nghiệp vụ (`DomainChecks`)** | 33/33 Đạt | 33/33 ca kiểm tra bao gồm cả luồng tự đăng ký, đăng ký hộ, bổ sung và đối chiếu trùng đạt trên JVM. |
+
+### Thông số bàn giao cho Kế hoạch 03 (`03_KE_HOACH_XET_VA_PHAN_BO.md`)
+* `campaign_id`: `c2` ("Thêm một bữa cơm lành")
+* `registration_id` mẫu hợp lệ: `R0036` (hoặc hồ sơ mới tạo) ở trạng thái `PENDING`
+* `is_approved`: `null` (Chờ điều phối viên xét duyệt điều kiện)
+* `tickets`: Chưa cấp vé (Sẽ được cấp sau khi xét đạt và chạy phân bổ)
+
 ## Nhánh MVC và Supabase
 
 | Hạng mục | Kết quả |
