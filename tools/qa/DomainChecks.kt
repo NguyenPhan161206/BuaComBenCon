@@ -9,6 +9,7 @@ import vn.edu.buacombencon.DemoStore.Companion.ALLOCATED
 import vn.edu.buacombencon.DemoStore.Companion.CANCELLED
 import vn.edu.buacombencon.DemoStore.Companion.PENDING
 import vn.edu.buacombencon.DemoStore.Companion.RECEIVED
+import vn.edu.buacombencon.DemoStore.Companion.REJECTED
 import vn.edu.buacombencon.DemoStore.Companion.WAITING
 import vn.edu.buacombencon.QrCode
 
@@ -132,6 +133,43 @@ object DomainChecks {
         }
         verify(duplicateCrossChannel.exceptionOrNull() is IllegalStateException,
             "reject duplicate registration across self and assisted channels for same phone")
+
+        // Plan 03 tests: Condition review, batch allocation, late review and waitlist reallocation
+        val unreviewed = store.register("c2", "Người chờ xét 1", "0901112233", "", mine = false, assisted = true, complete = true)
+        val rejectedReg = store.register("c2", "Người không đạt", "0902223344", "", mine = false, assisted = true, complete = true)
+        val incompleteReview = store.register("c2", "Người thiếu thông tin", "0903334455", "", mine = false, assisted = true, complete = false)
+
+        val failIncomplete = runCatching { store.review(incompleteReview, true) }
+        verify(failIncomplete.exceptionOrNull() is IllegalStateException, "cannot approve incomplete registration")
+
+        store.review(rejectedReg, false)
+        verify(rejectedReg.status == REJECTED, "rejected registration marked REJECTED")
+
+        store.review(unreviewed, true)
+        store.review(submitReopened, true)
+        store.review(assistedIncomplete, true)
+        verify(unreviewed.status == PENDING && unreviewed.reviewed, "approved registration before allocation remains PENDING")
+
+        // First allocation
+        future.confirmed = 2
+        val (allocatedCount, waitingCount) = store.allocateCampaign("c2")
+        verify(future.allocated, "campaign marked as allocated")
+        verify(store.assigned("c2") <= future.confirmed, "assigned count does not exceed confirmed supply")
+
+        // Late review enters waiting list
+        val lateApplicant = store.register("c2", "Người xét muộn", "0904445566", "", mine = false, assisted = true, complete = true)
+        store.review(lateApplicant, true)
+        verify(lateApplicant.status == WAITING, "late reviewed applicant enters waitlist directly")
+
+        // Cancellation and reallocation
+        val assignedReg = store.inCampaign("c2").first { it.status == ALLOCATED }
+        store.cancelRegistration(assignedReg.id)
+        verify(assignedReg.status == CANCELLED, "cancelled registration releases slot")
+
+        val reallocated = store.reallocateMeal("c2")
+        verify(reallocated != null && reallocated.status == ALLOCATED, "first waitlisted applicant reallocated")
+        verify(store.assigned("c2") == future.confirmed, "reallocation restores assigned count to full capacity")
+        verify(store.reallocateMeal("c2") == null, "cannot reallocate when capacity is already full")
 
         val qr = QrCode("BC0013")
         val image = BufferedImage(290, 290, BufferedImage.TYPE_INT_RGB)
