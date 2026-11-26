@@ -120,6 +120,19 @@ object DomainChecks {
         val duplicateReopened = runCatching { store.register("c2", "Người nhận mở lại", "0901234567", "", true, false) }
         verify(duplicateReopened.exceptionOrNull() is IllegalStateException, "caregiver duplicate registration on same campaign rejected")
 
+        // Plan 02 tests: Assisted registration, incomplete flag and supplementation
+        val assistedIncomplete = store.register("c2", "Người nhận hỗ trợ", "0907654321", "Cần bổ sung", mine = false, assisted = true, complete = false)
+        verify(assistedIncomplete.status == PENDING && assistedIncomplete.assisted && !assistedIncomplete.complete,
+            "assisted registration created in pending state with incomplete flag")
+        verify(store.completeRegistration(assistedIncomplete.id, "Đã bổ sung giấy tờ"),
+            "completeRegistration updates incomplete flag")
+        verify(assistedIncomplete.complete, "registration is marked complete")
+        val duplicateCrossChannel = runCatching {
+            store.register("c2", "Người nhận trùng", "0907654321", "", mine = true, assisted = false)
+        }
+        verify(duplicateCrossChannel.exceptionOrNull() is IllegalStateException,
+            "reject duplicate registration across self and assisted channels for same phone")
+
         val qr = QrCode("BC0013")
         val image = BufferedImage(290, 290, BufferedImage.TYPE_INT_RGB)
         for (y in 0 until image.height) {
