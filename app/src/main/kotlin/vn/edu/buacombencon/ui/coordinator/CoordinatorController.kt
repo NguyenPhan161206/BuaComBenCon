@@ -114,22 +114,32 @@ internal class CoordinatorController(
                 .show()
         }
         UiUtils.click(page, R.id.edit_supply_action) { editSupply(campaign) }
-        if (actions.connected) {
-            val id = if (campaign.allocated) R.id.reallocate_campaign_action else R.id.allocate_campaign_action
-            UiUtils.visible(page, id, true)
-            UiUtils.click(page, id) {
-                val rpc = if (campaign.allocated) "reallocate_meal" else "allocate_campaign_meals"
-                AlertDialog.Builder(activity)
-                    .setTitle(if (campaign.allocated) "Cấp lại cho hồ sơ đầu hàng chờ?" else "Phân bổ lần đầu?")
-                    .setNegativeButton("Quay lại", null)
-                    .setPositiveButton("Xác nhận") { _, _ ->
+        val allocateId = if (campaign.allocated) R.id.reallocate_campaign_action else R.id.allocate_campaign_action
+        UiUtils.visible(page, allocateId, true)
+        UiUtils.click(page, allocateId) {
+            val rpc = if (campaign.allocated) "reallocate_meal" else "allocate_campaign_meals"
+            AlertDialog.Builder(activity)
+                .setTitle(if (campaign.allocated) "Cấp lại cho hồ sơ đầu hàng chờ?" else "Phân bổ lần đầu?")
+                .setNegativeButton("Quay lại", null)
+                .setPositiveButton("Xác nhận") { _, _ ->
+                    if (actions.connected) {
                         actions.action(rpc, "p_campaign_id" to campaign.id) {
                             UiUtils.toast(activity, if (campaign.allocated) "Đã cấp lại 1 suất."
                                 else "Đã cấp ${it.getInt("allocated")} suất, ${it.getInt("waiting")} hồ sơ chờ.")
                             onRenderRequest()
                         }
-                    }.show()
-            }
+                    } else {
+                        if (campaign.allocated) {
+                            val reallocated = (store as DemoStore).reallocateMeal(campaign.id)
+                            UiUtils.toast(activity, if (reallocated != null) "Đã cấp lại 1 suất cho ${reallocated.name}."
+                                else "Không có suất trống hoặc không có hồ sơ trong hàng chờ.")
+                        } else {
+                            val (allocated, waiting) = (store as DemoStore).allocateCampaign(campaign.id)
+                            UiUtils.toast(activity, "Đã cấp $allocated suất, $waiting hồ sơ chờ.")
+                        }
+                        onRenderRequest()
+                    }
+                }.show()
         }
         val filters = page.findViewById<LinearLayout>(R.id.manage_filters)
         val list = page.findViewById<LinearLayout>(R.id.managed_registration_list)
@@ -195,7 +205,13 @@ internal class CoordinatorController(
 
     private fun reviewRegistration(registration: DemoStore.Registration) {
         fun review(approved: Boolean) {
-            actions.action("review_registration", "p_registration_id" to registration.id, "p_is_approved" to approved) {
+            if (actions.connected) {
+                actions.action("review_registration", "p_registration_id" to registration.id, "p_is_approved" to approved) {
+                    onRenderRequest()
+                }
+            } else {
+                val msg = (store as DemoStore).review(registration, approved)
+                UiUtils.toast(activity, msg)
                 onRenderRequest()
             }
         }

@@ -251,6 +251,62 @@ class DemoStore(context: Context) : ScreenData() {
         return "Đã đủ suất xác nhận. Hồ sơ được đưa vào danh sách chờ."
     }
 
+    fun review(registration: Registration, approved: Boolean): String {
+        check(registration.status == PENDING && !registration.reviewed) { "Hồ sơ không ở trạng thái chờ xét." }
+        check(!approved || registration.complete) { "Hồ sơ chưa đủ thông tin." }
+        val campaign = campaign(registration.campaignId)
+        registration.reviewed = true
+        if (!approved) {
+            registration.status = REJECTED
+            save()
+            return "Hồ sơ không đạt điều kiện."
+        }
+        if (campaign.allocated) {
+            registration.status = WAITING
+            save()
+            return "Hồ sơ đạt điều kiện và được đưa vào danh sách chờ."
+        }
+        registration.status = PENDING
+        save()
+        return "Hồ sơ đạt điều kiện, chờ đợt phân bổ."
+    }
+
+    fun allocateCampaign(campaignId: String): Pair<Int, Int> {
+        val campaign = campaign(campaignId)
+        val pending = inCampaign(campaignId).filter { it.status == PENDING && it.reviewed }
+        var assignedCount = 0
+        var waitingCount = 0
+        for (reg in pending) {
+            if (assigned(campaign.id) < campaign.confirmed) {
+                reg.status = ALLOCATED
+                assignedCount++
+            } else {
+                reg.status = WAITING
+                waitingCount++
+            }
+        }
+        campaign.allocated = true
+        save()
+        return assignedCount to waitingCount
+    }
+
+    fun reallocateMeal(campaignId: String): Registration? {
+        val campaign = campaign(campaignId)
+        check(campaign.allocated) { "Đợt chưa phân bổ lần đầu." }
+        if (assigned(campaign.id) >= campaign.confirmed) return null
+        val waiting = inCampaign(campaignId).firstOrNull { it.status == WAITING && it.reviewed } ?: return null
+        waiting.status = ALLOCATED
+        save()
+        return waiting
+    }
+
+    fun cancelRegistration(registrationId: String): Boolean {
+        val reg = registration(registrationId) ?: return false
+        reg.status = CANCELLED
+        save()
+        return true
+    }
+
     fun claimError(registration: Registration?, campaignId: String): String? {
         when {
             registration == null -> return "Không tìm thấy mã. Vui lòng kiểm tra hoặc nhờ điều phối viên hỗ trợ."
