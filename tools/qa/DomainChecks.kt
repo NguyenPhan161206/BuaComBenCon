@@ -103,6 +103,13 @@ object DomainChecks {
             "reject confirmed count below minimum threshold")
         store.updateSupply(future, confirmed, 0, "")
 
+        val newCamp = DemoStore.Campaign("c_test", "Đợt thử nghiệm mới", "Bữa trưa", 2, 25, "11:00 – 12:00")
+        store.campaigns.add(0, newCamp)
+        verify(newCamp.volunteers.contains("33333333-3333-3333-3333-333333333333"), "new campaign assigns default volunteer")
+        verify(store.assignVolunteer("c_test", "volunteer_custom_id"), "assign volunteer succeeds")
+        verify(newCamp.volunteers.contains("volunteer_custom_id"), "custom volunteer assigned to campaign")
+        verify(!store.assignVolunteer("c_test", "volunteer_custom_id"), "duplicate assignment handled gracefully")
+
         val qr = QrCode("BC0013")
         val image = BufferedImage(290, 290, BufferedImage.TYPE_INT_RGB)
         for (y in 0 until image.height) {

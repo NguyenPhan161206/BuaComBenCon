@@ -321,7 +321,8 @@ internal class CoordinatorController(
                 val date = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).plusDays(day.toLong())
                 actions.action("create_campaign", "p_title" to campaign.title, "p_meal" to campaign.meal,
                     "p_date" to date.toString(), "p_pickup_start" to start.toString(), "p_pickup_end" to end.toString(),
-                    "p_location" to campaign.location, "p_rules" to campaign.rules, "p_confirmed" to quantity) {
+                    "p_location" to campaign.location, "p_rules" to campaign.rules, "p_confirmed" to quantity,
+                    "p_volunteer_id" to "33333333-3333-3333-3333-333333333333") {
                     done(it.getString("id"))
                 }
             } else {

@@ -48,6 +48,7 @@ class DemoStore(context: Context) : ScreenData() {
         var archivedReceived = 0
         var fixedDate: LocalDate? = null
         var allocated = false
+        val volunteers = mutableListOf("33333333-3333-3333-3333-333333333333")
 
         fun date(): String {
             fixedDate?.let { return it.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ROOT)) }
@@ -267,6 +268,16 @@ class DemoStore(context: Context) : ScreenData() {
         campaign.note = note
         save()
         return null
+    }
+
+    fun assignVolunteer(campaignId: String, volunteerId: String): Boolean {
+        val camp = campaign(campaignId)
+        if (!camp.volunteers.contains(volunteerId)) {
+            camp.volunteers.add(volunteerId)
+            save()
+            return true
+        }
+        return false
     }
 }
 
