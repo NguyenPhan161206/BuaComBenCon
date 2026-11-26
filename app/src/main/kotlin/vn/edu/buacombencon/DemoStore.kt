@@ -251,6 +251,23 @@ class DemoStore(context: Context) : ScreenData() {
         val value = code.trim()
         return registrations.firstOrNull { it.code.equals(value, ignoreCase = true) }
     }
+
+    fun updateSupply(campaign: Campaign, confirmed: Int, prepared: Int, note: String): String? {
+        val receivedCount = received(campaign)
+        val assignedCount = assigned(campaign.id)
+        val minimum = maxOf(1, assignedCount, receivedCount)
+        if (confirmed !in minimum..1000) {
+            return "Số xác nhận phải từ $minimum đến 1.000 suất"
+        }
+        if (prepared !in receivedCount..confirmed) {
+            return "Số thực chuẩn bị phải từ $receivedCount đến $confirmed suất"
+        }
+        campaign.confirmed = confirmed
+        campaign.prepared = prepared
+        campaign.note = note
+        save()
+        return null
+    }
 }
 
 /** Data used to render the XML screens. A connected snapshot lives only in memory. */

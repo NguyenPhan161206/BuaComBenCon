@@ -94,6 +94,14 @@ object DomainChecks {
         future.pledged += 20
         store.save()
         verify(future.confirmed == confirmed, "pledged meals remain separate from confirmed supply")
+        verify(store.updateSupply(future, 50, 45, "Cập nhật thử") == null,
+            "valid supply update persists on c2")
+        verify(future.confirmed == 50 && future.prepared == 45, "confirmed and prepared updated")
+        verify(store.updateSupply(future, 40, 45, "Sai số lượng") != null,
+            "reject prepared exceeding confirmed supply")
+        verify(store.updateSupply(future, 0, 0, "Số lượng không hợp lệ") != null,
+            "reject confirmed count below minimum threshold")
+        store.updateSupply(future, confirmed, 0, "")
 
         val qr = QrCode("BC0013")
         val image = BufferedImage(290, 290, BufferedImage.TYPE_INT_RGB)

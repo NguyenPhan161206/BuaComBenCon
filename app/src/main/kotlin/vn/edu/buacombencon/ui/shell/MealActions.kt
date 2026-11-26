@@ -89,10 +89,11 @@ internal class MealActions(
             action("update_campaign_supply", "p_campaign_id" to campaign.id,
                 "p_confirmed" to confirmed, "p_prepared" to prepared, "p_note" to note) { onDone() }
         } else {
-            campaign.confirmed = confirmed
-            campaign.prepared = prepared
-            campaign.note = note
-            demo.save()
+            val error = demo.updateSupply(campaign, confirmed, prepared, note)
+            if (error != null) {
+                showError(IllegalStateException(error))
+                return
+            }
             onDone()
         }
     }
