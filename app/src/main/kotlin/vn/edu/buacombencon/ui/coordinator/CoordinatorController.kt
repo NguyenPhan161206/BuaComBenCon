@@ -157,19 +157,26 @@ internal class CoordinatorController(
                 UiUtils.visible(card, R.id.registration_note, true)
                 UiUtils.text(card, R.id.registration_note, registration.note)
             }
-            if (actions.connected && registration.status == DemoStore.PENDING && !registration.reviewed) {
+            if (registration.status == DemoStore.PENDING && !registration.reviewed) {
                 if (!registration.complete) {
                     UiUtils.visible(card, R.id.complete_registration_action, true)
                     UiUtils.click(card, R.id.complete_registration_action) {
-                        actions.action("complete_registration", "p_registration_id" to registration.id,
-                            "p_note" to registration.note) { onRenderRequest() }
+                        if (actions.connected) {
+                            actions.action("complete_registration", "p_registration_id" to registration.id,
+                                "p_note" to registration.note) { onRenderRequest() }
+                        } else {
+                            (store as DemoStore).completeRegistration(registration.id, registration.note)
+                            onRenderRequest()
+                        }
                     }
                 }
                 UiUtils.visible(card, R.id.allocate_action, true)
                 UiUtils.text(card, R.id.allocate_action, "Xét điều kiện")
-                UiUtils.click(card, R.id.allocate_action) { reviewRegistration(registration) }
-            } else if (!actions.connected &&
-                (registration.status == DemoStore.PENDING || registration.status == DemoStore.WAITING)) {
+                UiUtils.click(card, R.id.allocate_action) {
+                    if (actions.connected) reviewRegistration(registration)
+                    else confirmAllocation(campaign, registration)
+                }
+            } else if (!actions.connected && registration.status == DemoStore.WAITING) {
                 UiUtils.visible(card, R.id.allocate_action, true)
                 UiUtils.click(card, R.id.allocate_action) { confirmAllocation(campaign, registration) }
             }
