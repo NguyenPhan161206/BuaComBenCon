@@ -84,6 +84,15 @@ BEGIN
     result := public.allocate_campaign_meals('qa-capacity');
     ASSERT (result->>'allocated')::int = 30 AND (result->>'waiting')::int = 5, '35 applicants -> 30 allocated and 5 waiting';
     RAISE NOTICE 'PASS: 35/30/5';
+
+    -- Test registration toggle and volunteer assignment
+    PERFORM public.set_registration_open('qa-intake', false);
+    ASSERT NOT (SELECT is_registration_open FROM public.campaigns WHERE id = 'qa-intake'), 'Coordinator closes intake';
+    PERFORM public.set_registration_open('qa-intake', true);
+    ASSERT (SELECT is_registration_open FROM public.campaigns WHERE id = 'qa-intake'), 'Coordinator reopens intake';
+    PERFORM public.assign_campaign_volunteer('qa-intake', '33333333-3333-3333-3333-333333333333');
+    ASSERT EXISTS (SELECT 1 FROM public.campaign_volunteers WHERE campaign_id = 'qa-intake' AND volunteer_id = '33333333-3333-3333-3333-333333333333'), 'Volunteer assigned to campaign';
+    RAISE NOTICE 'PASS: toggle registration and volunteer assignment';
 END;
 $$;
 

@@ -110,6 +110,16 @@ object DomainChecks {
         verify(newCamp.volunteers.contains("volunteer_custom_id"), "custom volunteer assigned to campaign")
         verify(!store.assignVolunteer("c_test", "volunteer_custom_id"), "duplicate assignment handled gracefully")
 
+        // Multi-role synchronization & boundary tests
+        future.registrationOpen = false
+        val submitClosed = runCatching { store.register("c2", "Người nhận đóng đợt", "0901234567", "", true, false) }
+        verify(submitClosed.exceptionOrNull() is IllegalStateException, "caregiver registration rejected when coordinator closes intake")
+        future.registrationOpen = true
+        val submitReopened = store.register("c2", "Người nhận mở lại", "0901234567", "", true, false)
+        verify(submitReopened.status == PENDING, "caregiver registration succeeds when intake reopened")
+        val duplicateReopened = runCatching { store.register("c2", "Người nhận mở lại", "0901234567", "", true, false) }
+        verify(duplicateReopened.exceptionOrNull() is IllegalStateException, "caregiver duplicate registration on same campaign rejected")
+
         val qr = QrCode("BC0013")
         val image = BufferedImage(290, 290, BufferedImage.TYPE_INT_RGB)
         for (y in 0 until image.height) {
